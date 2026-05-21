@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     requireSupabaseAuth();
     const body = await request.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const appUrl = new URL(request.url).origin;
 
     if (!email) {
       const response: ApiResponse<null> = {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       type: 'signup',
       email,
       options: {
-        emailRedirectTo: getAuthRedirectUrl(),
+        emailRedirectTo: getAuthRedirectUrl(appUrl),
       },
     });
 

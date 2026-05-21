@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as SignupFormData;
     const { email, password, full_name } = body;
     const normalizedEmail = email.trim().toLowerCase();
+    const appUrl = new URL(request.url).origin;
 
     if (!normalizedEmail || !password || !full_name) {
       const response: ApiResponse<null> = {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       password,
       options: {
         data: { full_name },
-        emailRedirectTo: getAuthRedirectUrl(),
+        emailRedirectTo: getAuthRedirectUrl(appUrl),
       },
     });
 

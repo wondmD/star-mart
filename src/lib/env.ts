@@ -48,7 +48,7 @@ export const env = {
     return optionalEnv('NEXT_PUBLIC_APP_NAME', 'StarMart');
   },
   get NEXT_PUBLIC_APP_URL() {
-    return optionalEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
+    return optionalEnv('NEXT_PUBLIC_APP_URL');
   },
 } as const;
 
