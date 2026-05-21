@@ -8,5 +8,5 @@ export function subtotalFromLineItems(
 }
 
 export function totalWithTax(subtotal: number): number {
-  return Math.round(subtotal * (1 + CHECKOUT_TAX_RATE) * 100) / 100;
+  return Math.round(subtotal * (1 + CHECKOUT_TAX_RATE));
 }
