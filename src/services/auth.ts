@@ -80,10 +80,11 @@ export const authService = {
     }
 
     const supabase = getBrowserSupabaseClient();
+    const redirectTo = getAuthRedirectUrl(window.location.origin);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: getAuthRedirectUrl(),
+        redirectTo,
       },
     });
 
