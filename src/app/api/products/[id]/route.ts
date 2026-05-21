@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+
+import { requireAdminAccess } from '@/lib/admin-access';
+import {
+  mutateProductWithFallback,
+} from '@/lib/admin-product-utils';
 import { hasSupabaseConfig } from '@/lib/has-supabase';
 import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase-config';
 import { ApiResponse, Product } from '@/types';
@@ -15,6 +20,20 @@ function asNumber(value: unknown): number | undefined {
   }
 
   return undefined;
+}
+
+function buildPartialProductPayload(body: Partial<Product>): Record<string, unknown> {
+  const payload: Record<string, unknown> = {};
+
+  if (body.name !== undefined) payload.name = body.name.trim();
+  if (body.description !== undefined) payload.description = body.description.trim();
+  if (body.price !== undefined) payload.price = body.price;
+  if (body.discount_price !== undefined) payload.discount_price = body.discount_price;
+  if (body.image_url !== undefined) payload.image_url = body.image_url.trim();
+  if (body.category !== undefined) payload.category = body.category.trim();
+  if (body.stock !== undefined) payload.stock = body.stock;
+
+  return payload;
 }
 
 function normalizeProductRow(row: Record<string, unknown>): Product {
@@ -75,6 +94,97 @@ export async function GET(
     const response: ApiResponse<null> = {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch product',
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const access = await requireAdminAccess(request);
+    if (!access.ok) {
+      return access.response;
+    }
+
+    const { id } = await params;
+    const body = (await request.json()) as Partial<Product>;
+    const payload = buildPartialProductPayload(body);
+
+    if (Object.keys(payload).length === 0) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'No product fields provided to update',
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    const updated = await mutateProductWithFallback(
+      async (currentPayload) =>
+        access.adminClient
+          .from('products')
+          .update(currentPayload)
+          .eq('id', id)
+          .select()
+          .single(),
+      payload,
+    );
+
+    if (!updated) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Product not found',
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const response: ApiResponse<Product> = {
+      success: true,
+      data: normalizeProductRow(updated as Record<string, unknown>),
+      message: 'Product updated successfully',
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update product',
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const access = await requireAdminAccess(request);
+    if (!access.ok) {
+      return access.response;
+    }
+
+    const { id } = await params;
+    const { error } = await access.adminClient.from('products').delete().eq('id', id);
+
+    if (error) {
+      throw error;
+    }
+
+    const response: ApiResponse<null> = {
+      success: true,
+      message: 'Product deleted successfully',
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete product',
     };
     return NextResponse.json(response, { status: 500 });
   }

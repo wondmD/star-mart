@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { deleteLocalSession } from '@/lib/local-auth-store';
+import { useSupabaseAuth } from '@/lib/auth-mode';
 import { ApiResponse } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('Authorization');
 
-    if (authHeader?.startsWith('Bearer ')) {
+    if (!useSupabaseAuth() && authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7);
       await deleteLocalSession(token);
     }

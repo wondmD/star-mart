@@ -6,8 +6,8 @@ import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { Input, Select } from '@/components/FormElements';
 import { useCartStore } from '@/stores/cart-store';
+import { showCartToast } from '@/lib/cart-toast';
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { ProductCardSkeleton, FilterSidebarSkeleton } from '@/components/Skeleton';
 
 const CATEGORIES = [
@@ -40,7 +40,7 @@ function ProductsPageContent() {
 
   const handleAddToCart = (product: any) => {
     addItem(product, 1);
-    toast.success('Added to cart!');
+    showCartToast({ productName: product.name });
   };
 
   return (

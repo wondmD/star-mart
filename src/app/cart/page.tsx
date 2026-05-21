@@ -33,7 +33,7 @@ export default function CartPage() {
 
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
+      <div className="flex flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-t-transparent mb-4" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }} />
         <p className="text-gray-600">Loading cart…</p>
       </div>
@@ -41,7 +41,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-6 lg:px-8">
       <div>
         <Link href="/products" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4">
           <ArrowLeft className="w-4 h-4" />
@@ -58,7 +58,7 @@ export default function CartPage() {
           ) : (
             items.map((item) => (
               <Card key={item.product_id} className="flex gap-6">
-                <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   <Image
                     src={item.product.image_url}
                     alt={item.product.name}

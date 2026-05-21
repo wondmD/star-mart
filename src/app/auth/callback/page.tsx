@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 
 import { getBrowserSupabaseClient } from '@/lib/supabase';
 import { authService, getLoginPath } from '@/services/auth';
+import { getSafeReturnToPath } from '@/lib/auth-url';
 import { useAuthStore } from '@/stores/auth-store';
 
 function AuthCallbackContent() {
@@ -23,6 +24,7 @@ function AuthCallbackContent() {
       const token_hash = searchParams.get('token_hash');
       const type = searchParams.get('type');
       const email = searchParams.get('email') ?? '';
+      const returnTo = getSafeReturnToPath(searchParams.get('returnTo') ?? undefined);
 
       if (code) {
         try {
@@ -39,13 +41,13 @@ function AuthCallbackContent() {
 
           if (isEmailVerification) {
             toast.success('Email verified! You can sign in now.', { duration: 6000 });
-            router.replace(getLoginPath({ verified: true, email: email || undefined }));
+            router.replace(getLoginPath({ verified: true, email: email || undefined, returnTo: returnTo === '/' ? undefined : returnTo }));
             return;
           }
 
           setUser(user);
           toast.success('Signed in with Google!', { duration: 6000 });
-          router.replace('/');
+          router.replace(returnTo);
           return;
         } catch (callbackError) {
           if (!isMounted) {
@@ -86,7 +88,7 @@ function AuthCallbackContent() {
 
         setUser(user);
         toast.success('Signed in with Google!', { duration: 6000 });
-        router.replace('/');
+        router.replace(returnTo);
       } catch (verificationError) {
         if (!isMounted) {
           return;

@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-3" style={{ color: 'var(--text-secondary)' }}>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+251 911 234 567</span>
+                <span>+251 000 000 000</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
@@ -91,7 +91,7 @@ export const Footer: React.FC = () => {
 
         <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center" style={{ borderColor: 'var(--border-color)' }}>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            &copy; 2024 StarMart. All rights reserved.
+            &copy; 2026 StarMart. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="transition" style={{ color: 'var(--accent-primary)' }}>

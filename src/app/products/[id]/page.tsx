@@ -7,8 +7,8 @@ import { useProduct } from '@/hooks/useProducts';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/FormElements';
 import { useCartStore } from '@/stores/cart-store';
+import { showCartToast } from '@/lib/cart-toast';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 interface Props {
   params: Promise<{
@@ -21,7 +21,7 @@ function ProductDetailSkeleton() {
     <div className="space-y-6 animate-pulse">
       <div className="h-6 w-40 rounded bg-gray-200" />
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="h-96 rounded-lg bg-gray-200 md:h-[500px]" />
+        <div className="h-96 rounded-lg bg-gray-200 md:h-125" />
         <div className="space-y-4">
           <div className="h-5 w-24 rounded bg-gray-200" />
           <div className="h-10 w-3/4 rounded bg-gray-200" />
@@ -43,7 +43,7 @@ export default function ProductDetailsPage({ params }: Props) {
   const handleAddToCart = () => {
     if (product) {
       addItem(product, quantity);
-      toast.success(`Added ${quantity} item(s) to cart!`);
+      showCartToast({ productName: product.name, quantity });
     }
   };
 
@@ -76,7 +76,7 @@ export default function ProductDetailsPage({ params }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Image */}
         <div className="relative">
-          <div className="relative h-96 md:h-[500px] bg-gray-100 rounded-lg overflow-hidden">
+          <div className="relative h-96 md:h-125 bg-gray-100 rounded-lg overflow-hidden">
             <Image
               src={product.image_url}
               alt={product.name}

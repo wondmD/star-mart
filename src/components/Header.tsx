@@ -4,7 +4,7 @@ import React, { useDeferredValue, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart, Menu, X, LogOut, User, Moon, Sun, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, LogOut, User, Moon, Sun, Search, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const { items } = useCartStore();
@@ -36,14 +37,28 @@ export const Header: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    let loggedOutSuccessfully = false;
+
     try {
       const { authService } = await import('@/services/auth');
       await authService.logout();
-      logout();
-      toast.success('Logged out successfully');
-      router.push('/');
+      loggedOutSuccessfully = true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Logout failed');
+    } finally {
+      logout();
+      setMobileMenuOpen(false);
+      router.replace('/');
+      router.refresh();
+      if (loggedOutSuccessfully) {
+        toast.success('Logged out successfully');
+      }
+      setIsLoggingOut(false);
     }
   };
 
@@ -153,6 +168,12 @@ export const Header: React.FC = () => {
               Orders
             </Link>
           )}
+          {user?.is_admin && (
+            <Link href="/admin" className="inline-flex items-center gap-2 transition" style={{ color: 'var(--text-secondary)' }}>
+              <ShieldCheck className="w-4 h-4" />
+              Admin
+            </Link>
+          )}
         </div>
 
         {/* Right Section */}
@@ -195,12 +216,14 @@ export const Header: React.FC = () => {
                 <span>{user.full_name}</span>
               </Link>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 transition"
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 transition disabled:opacity-60"
                 style={{ color: 'var(--error)' }}
               >
                 <LogOut className="w-5 h-5" />
-                <span>Logout</span>
+                <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
               </button>
             </div>
           ) : (
@@ -243,15 +266,23 @@ export const Header: React.FC = () => {
                 <Link href="/orders" className="block transition" style={{ color: 'var(--text-secondary)' }}>
                   Orders
                 </Link>
+                {user.is_admin && (
+                  <Link href="/admin" className="inline-flex items-center gap-2 transition" style={{ color: 'var(--text-secondary)' }}>
+                    <ShieldCheck className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
                 <Link href="/profile" className="block transition" style={{ color: 'var(--text-secondary)' }}>
                   Profile
                 </Link>
                 <button
+                  type="button"
                   onClick={handleLogout}
-                  className="w-full text-left transition"
+                  disabled={isLoggingOut}
+                  className="w-full text-left transition disabled:opacity-60"
                   style={{ color: 'var(--error)' }}
                 >
-                  Logout
+                  {isLoggingOut ? 'Logging out…' : 'Logout'}
                 </button>
               </>
             )}
