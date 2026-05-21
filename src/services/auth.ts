@@ -26,6 +26,10 @@ function getAuthToken(): string | null {
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
+export function getStoredAuthToken(): string | null {
+  return getAuthToken();
+}
+
 async function authRequest<T>(
   path: string,
   options: RequestInit = {},
@@ -69,18 +73,18 @@ export function getVerifyEmailPath(
   return getVerifyEmailUrl(email, reason);
 }
 
-export function getLoginPath(options?: { verified?: boolean; email?: string }): string {
+export function getLoginPath(options?: { verified?: boolean; email?: string; returnTo?: string }): string {
   return getLoginUrl(options);
 }
 
 export const authService = {
-  async signInWithGoogle(): Promise<void> {
+  async signInWithGoogle(returnTo?: string): Promise<void> {
     if (!hasSupabaseConfig()) {
       throw new Error('Google sign-in requires Supabase authentication to be configured');
     }
 
     const supabase = getBrowserSupabaseClient();
-    const redirectTo = getAuthRedirectUrl(window.location.origin);
+    const redirectTo = getAuthRedirectUrl(window.location.origin, returnTo);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

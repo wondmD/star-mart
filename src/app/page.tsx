@@ -9,6 +9,7 @@ import { Button } from '@/components/Button';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { useCartStore } from '@/stores/cart-store';
+import { showCartToast } from '@/lib/cart-toast';
 import {
   ArrowRight,
   BadgePercent,
@@ -20,7 +21,6 @@ import {
   Truck,
   RotateCcw,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { ProductCardSkeleton, FeatureCardSkeleton } from '@/components/Skeleton';
 import { Product } from '@/types';
 
@@ -64,7 +64,7 @@ export default function Home() {
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
-    toast.success('Added to cart!');
+    showCartToast({ productName: product.name });
   };
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {

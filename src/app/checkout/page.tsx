@@ -12,6 +12,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { paymentService } from '@/services/payment';
+import { getLoginPath } from '@/services/auth';
 import { totalWithTax } from '@/lib/checkout-totals';
 import toast from 'react-hot-toast';
 import { CreditCard, Package, MapPin } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="px-4 py-12 text-center sm:px-6 lg:px-8">
         <p className="text-lg text-gray-600 mb-4">Your cart is empty</p>
         <Button onClick={() => router.push('/products')}>Continue Shopping</Button>
       </div>
@@ -48,9 +49,9 @@ export default function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
+      <div className="px-4 py-12 text-center sm:px-6 lg:px-8">
         <p className="text-lg text-gray-600 mb-4">Please log in to checkout</p>
-        <Button onClick={() => router.push('/auth/login')}>Sign in</Button>
+        <Button onClick={() => router.push(getLoginPath({ returnTo: '/cart' }))}>Sign in</Button>
       </div>
     );
   }
@@ -97,7 +98,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-4xl font-bold">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

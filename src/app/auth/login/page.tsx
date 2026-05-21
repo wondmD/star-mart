@@ -11,6 +11,7 @@ import { loginValidationSchema } from '@/schemas';
 import { AUTH_ERROR_CODES } from '@/lib/auth-codes';
 import { AuthApiError } from '@/lib/auth-api-error';
 import { authService, getVerifyEmailPath } from '@/services/auth';
+import { getSafeReturnToPath } from '@/lib/auth-url';
 import { useAuthStore } from '@/stores/auth-store';
 import { useFormStore } from '@/stores/form-store';
 import toast from 'react-hot-toast';
@@ -28,11 +29,12 @@ function LoginForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const verified = searchParams.get('verified') === 'true';
   const prefilledEmail = searchParams.get('email') ?? '';
+  const returnTo = getSafeReturnToPath(searchParams.get('returnTo') ?? undefined);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await authService.signInWithGoogle();
+      await authService.signInWithGoogle(returnTo);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
       toast.error(errorMessage);
@@ -102,7 +104,7 @@ function LoginForm() {
               setUser(user);
               resetForm();
               toast.success('Welcome back!');
-              router.push('/');
+              router.push(returnTo);
             } catch (error) {
               if (
                 error instanceof AuthApiError &&

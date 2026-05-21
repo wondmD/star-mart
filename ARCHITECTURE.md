@@ -513,8 +513,11 @@ CREATE TABLE users (
   full_name TEXT NOT NULL,
   phone TEXT,
   avatar_url TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Grant admin access by setting is_admin = true for trusted accounts.
 ```
 
 ### Products Table

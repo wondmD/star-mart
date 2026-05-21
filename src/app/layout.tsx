@@ -35,7 +35,12 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
-              <Toaster position="top-right" />
+              <Toaster
+                position="top-center"
+                containerStyle={{
+                  top: '1rem',
+                }}
+              />
             </AuthProvider>
           </QueryProvider>
         </CustomThemeProvider>

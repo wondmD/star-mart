@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+
+import { requireAdminAccess } from '@/lib/admin-access';
+import { buildProductPayload, mutateProductWithFallback } from '@/lib/admin-product-utils';
 import { hasSupabaseConfig } from '@/lib/has-supabase';
 import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase-config';
 import { ApiResponse, Product } from '@/types';
@@ -113,6 +116,69 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse<null> = {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch products',
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const access = await requireAdminAccess(request);
+    if (!access.ok) {
+      return access.response;
+    }
+
+    const body = (await request.json()) as Partial<Product>;
+    const name = body.name?.trim();
+    const description = body.description?.trim();
+    const imageUrl = body.image_url?.trim();
+    const category = body.category?.trim();
+    const price = asNumber(body.price);
+    const stock = asNumber(body.stock);
+
+    if (!name || !description || !imageUrl || !category || price === undefined || stock === undefined) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Name, description, image URL, category, price, and stock are required',
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    const payload = buildProductPayload({
+      name,
+      description,
+      price,
+      discount_price: asNumber(body.discount_price),
+      image_url: imageUrl,
+      category,
+      stock,
+    });
+
+    const inserted = await mutateProductWithFallback(
+      async (currentPayload) => access.adminClient.from('products').insert([currentPayload]).select().single(),
+      payload,
+    );
+
+    if (!inserted) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Product could not be created',
+      };
+      return NextResponse.json(response, { status: 500 });
+    }
+
+    const response: ApiResponse<Product> = {
+      success: true,
+      data: normalizeProductRow(inserted as Record<string, unknown>),
+      message: 'Product created successfully',
+    };
+
+    return NextResponse.json(response, { status: 201 });
+  } catch (error) {
+    console.error('Error creating product:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create product',
     };
     return NextResponse.json(response, { status: 500 });
   }
