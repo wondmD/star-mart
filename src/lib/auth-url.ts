@@ -1,8 +1,17 @@
-export function getAuthRedirectUrl(): string {
+export function getAuthRedirectUrl(baseUrl?: string): string {
   const base =
-    process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, '') ||
-    'http://localhost:3000';
-  return `${base}/auth/callback`;
+    baseUrl?.trim().replace(/\/$/, '') ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, '');
+
+  if (base) {
+    return `${base}/auth/callback`;
+  }
+
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return `${window.location.origin.replace(/\/$/, '')}/auth/callback`;
+  }
+
+  throw new Error('Missing NEXT_PUBLIC_APP_URL for auth redirect');
 }
 
 export function getVerifyEmailUrl(email: string, reason?: 'exists' | 'created'): string {
