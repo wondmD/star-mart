@@ -79,24 +79,28 @@ function buildHeaders(): Record<string, string> {
   return headers;
 }
 
-/** Ethiopian mobile for StarPay QA — 10 digits starting with 09. */
+/** Ethiopian mobile for StarPay QA — normalize to +251 E.164 format. */
 export function normalizeStarPayPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '');
 
+  if (phone.trim().startsWith('+251') && digits.length === 12) {
+    return `+${digits}`;
+  }
+
   if (digits.startsWith('251') && digits.length === 12) {
-    return `0${digits.slice(3)}`;
+    return `+${digits}`;
   }
 
   if (digits.startsWith('0') && digits.length === 10) {
-    return digits;
+    return `+251${digits.slice(1)}`;
   }
 
   if (digits.length === 9 && digits.startsWith('9')) {
-    return `0${digits}`;
+    return `+251${digits}`;
   }
 
   if (digits.length === 10 && digits.startsWith('9')) {
-    return `0${digits}`;
+    return `+251${digits}`;
   }
 
   return phone.trim();
