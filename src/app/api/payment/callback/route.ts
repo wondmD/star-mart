@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getOrderById, markOrderPaid } from '@/lib/order-payment-update';
-import { readLocalOrders } from '@/lib/local-order-store';
+import {
+  getOrderById,
+  getOrderByPaymentId,
+  markOrderPaid,
+} from '@/lib/order-payment-update';
 import { extractStarPayError, isStarPayPaidStatus } from '@/lib/starpay';
 import { ApiResponse } from '@/types';
 
@@ -62,9 +65,8 @@ export async function POST(request: NextRequest) {
     let orderId = orderReference || undefined;
 
     if (!orderId && starpayOrderId) {
-      const orders = await readLocalOrders();
-      const match = orders.find((order) => order.payment_id === starpayOrderId);
-      orderId = match?.id;
+      const matchedOrder = await getOrderByPaymentId(starpayOrderId);
+      orderId = matchedOrder?.id;
     }
 
     if (!orderId) {

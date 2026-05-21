@@ -78,7 +78,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 1. Go to https://mjddlvvumelnuwsrcksx.supabase.co
 2. Open SQL Editor
 3. Run the SQL from README.md under "Create Tables" section
-4. Insert sample products
 
 ### 4. Run Development Server
 ```bash

@@ -1,8 +1,13 @@
-import { getOrderById, updateOrderById } from '@/lib/orders-repository';
+import {
+  getOrderById,
+  getOrderByPaymentId,
+  updateOrderById,
+} from '@/lib/orders-repository';
 import { isStarPayPaidStatus } from '@/lib/starpay';
 import { Order } from '@/types';
 
 export { getOrderById };
+export { getOrderByPaymentId };
 
 export async function markOrderPaid(
   orderId: string,

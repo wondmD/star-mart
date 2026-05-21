@@ -1,44 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { hasSupabaseConfig } from '@/lib/has-supabase';
-import { readLocalProducts } from '@/lib/local-product-store';
+import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase-config';
 import { ApiResponse, Product } from '@/types';
 
-function filterLocalProducts(
+function asNumber(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  return undefined;
+}
+
+function normalizeProductRow(row: Record<string, unknown>): Product {
+  const price = asNumber(row.price) ?? 0;
+  const stock = asNumber(row.stock) ?? 0;
+  const discountPrice = asNumber(row.discount_price);
+
+  return {
+    id: String(row.id ?? ''),
+    name: String(row.name ?? 'Unnamed Product'),
+    description: String(row.description ?? ''),
+    price,
+    discount_price: discountPrice,
+    image_url: String(row.image_url ?? '/placeholder.png'),
+    category: String(row.category ?? 'General'),
+    stock,
+    created_at: String(row.created_at ?? new Date().toISOString()),
+  };
+}
+
+function filterProducts(
   products: Product[],
   category: string | null,
   minPrice: string | null,
   maxPrice: string | null,
   search: string | null,
 ): Product[] {
-  return products
-    .filter((product) => {
-      if (category && product.category !== category) {
-        return false;
-      }
+  const normalizedCategory = category?.trim().toLowerCase() ?? null;
+  const min = minPrice ? Number(minPrice) : undefined;
+  const max = maxPrice ? Number(maxPrice) : undefined;
+  const searchTerm = search?.trim().toLowerCase() ?? null;
 
-      if (minPrice && product.price < parseFloat(minPrice)) {
-        return false;
-      }
+  return products.filter((product) => {
+    if (normalizedCategory && product.category.toLowerCase() !== normalizedCategory) {
+      return false;
+    }
 
-      if (maxPrice && product.price > parseFloat(maxPrice)) {
-        return false;
-      }
+    if (min !== undefined && product.price < min) {
+      return false;
+    }
 
-      if (search) {
-        const searchTerm = search.toLowerCase();
-        return (
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.description.toLowerCase().includes(searchTerm)
-        );
-      }
+    if (max !== undefined && product.price > max) {
+      return false;
+    }
 
-      return true;
-    })
-    .sort(
-      (left, right) =>
-        new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
-    );
+    if (searchTerm) {
+      return (
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.description.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return true;
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -50,68 +80,31 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
 
     if (!hasSupabaseConfig()) {
-      const localProducts = await readLocalProducts();
-      const response: ApiResponse<Product[]> = {
-        success: true,
-        data: filterLocalProducts(localProducts, category, minPrice, maxPrice, search),
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
       };
-      return NextResponse.json(response);
+      return NextResponse.json(response, { status: 503 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
+    const supabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
 
-    let query = supabase.from('products').select('*');
-
-    if (category) {
-      query = query.eq('category', category);
-    }
-
-    if (minPrice) {
-      query = query.gte('price', parseFloat(minPrice));
-    }
-
-    if (maxPrice) {
-      query = query.lte('price', parseFloat(maxPrice));
-    }
-
-    if (search) {
-      query = query.or(
-        `name.ilike.%${search}%,description.ilike.%${search}%`
-      );
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
-
-    if (!error && data && data.length > 0) {
-      const response: ApiResponse<Product[]> = {
-        success: true,
-        data: data as Product[],
-      };
-
-      return NextResponse.json(response);
-    }
-
-    const localProducts = await readLocalProducts();
-
-    if (localProducts.length > 0) {
-      const response: ApiResponse<Product[]> = {
-        success: true,
-        data: filterLocalProducts(localProducts, category, minPrice, maxPrice, search),
-      };
-
-      return NextResponse.json(response);
-    }
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
     }
 
+    const normalizedProducts = ((data ?? []) as Record<string, unknown>[]).map(
+      normalizeProductRow,
+    );
+
     const response: ApiResponse<Product[]> = {
       success: true,
-      data: data as Product[],
+      data: filterProducts(normalizedProducts, category, minPrice, maxPrice, search),
     };
 
     return NextResponse.json(response);
