@@ -2,7 +2,7 @@
 
 A production-ready mini e-commerce platform built with Next.js, TypeScript, Tailwind CSS, and Supabase. This project demonstrates modern frontend architecture, state management, and secure payment integration.
 
-## 🚀 Features
+## Features
 
 ### Core Features
 - **User Authentication**: Secure sign-up and login using Supabase Auth
@@ -29,7 +29,7 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-## 📋 Environment Configuration
+## Environment Configuration
 
 Create a `.env.local` file:
 
@@ -43,7 +43,7 @@ STARPAY_SECRET_KEY=your_secret_key
 NEXT_PUBLIC_STARPAY_API_KEY=your_public_key
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 - **Frontend**: Next.js 16 with TypeScript
 - **State Management**: Zustand (local) + TanStack Query (server)
@@ -52,7 +52,7 @@ NEXT_PUBLIC_STARPAY_API_KEY=your_public_key
 - **Backend**: Supabase (Auth + PostgreSQL)
 - **Payment**: StarPay (Server-side integration)
 
-## 📚 Full Documentation
+## Full Documentation
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - Project structure
@@ -61,7 +61,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - Deployment guide
 - Troubleshooting
 
-## 🔐 Security
+## Security
 
 - Server-side payment processing
 - Environment variables for secrets
@@ -69,7 +69,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - Input validation and sanitization
 - Secure data transmission
 
-## 📱 Pages
+## Pages
 
 - `/` - Home page
 - `/products` - Product listing with filters
@@ -81,7 +81,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - `/orders` - Orders listing
 - `/order-confirmation/[id]` - Order confirmation
 
-## 🚀 Deployment
+## Deployment
 
 Deploy to Vercel:
 
@@ -92,10 +92,10 @@ git push origin main
 # Deploy
 ```
 
-## 📄 License
+## License
 
-This project is provided as-is for the technical challenge.
+This project is developed for the technical challenge.
 
 ---
 
-**Built with ❤️ using Next.js, Tailwind, and Supabase**
+**Built using Next.js, Tailwind, and Supabase**

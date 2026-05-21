@@ -17,7 +17,8 @@ import { useFormStore } from '@/stores/form-store';
 import toast from 'react-hot-toast';
 import { LogIn } from 'lucide-react';
 import { SiGoogle } from 'react-icons/si';
-import { FullPageSpinner, ButtonSpinner } from '@/components/Spinner';
+import { ButtonSpinner } from '@/components/Spinner';
+import AuthFormSkeleton from '@/components/AuthFormSkeleton';
 
 function LoginForm() {
   const router = useRouter();
@@ -204,7 +205,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<FullPageSpinner message="Loading login…" />}>
+    <Suspense fallback={<AuthFormSkeleton message="Loading login…" />}>
       <LoginForm />
     </Suspense>
   );

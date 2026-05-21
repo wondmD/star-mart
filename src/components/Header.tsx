@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useDeferredValue, useState } from 'react';
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { ShoppingCart, Menu, X, LogOut, User, Moon, Sun, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ShoppingCart, Menu, X, LogOut, User, Moon, Sun, Search, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ import { productService } from '@/services/products';
 
 export const Header: React.FC = () => {
   const router = useRouter();
+  const headerRef = useRef<HTMLElement | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -24,17 +26,39 @@ export const Header: React.FC = () => {
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
   const deferredSearchQuery = useDeferredValue(searchQuery.trim());
   const shouldFetchSuggestions = deferredSearchQuery.length > 0;
-
   const { data: searchResults = [], isFetching } = useQuery({
     queryKey: ['header-search-suggestions', deferredSearchQuery],
     queryFn: () => productService.getProducts({ search: deferredSearchQuery, minPrice: 0, maxPrice: 100000 }),
     enabled: shouldFetchSuggestions,
     staleTime: 1000 * 60 * 2,
   });
+  const visibleSearchResults = searchResults.slice(0, 5);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+
+      if (!target || headerRef.current?.contains(target)) {
+        return;
+      }
+
+      setMobileMenuOpen(false);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     if (isLoggingOut) {
@@ -77,7 +101,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b backdrop-blur-xl" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+    <header ref={headerRef} className="sticky top-0 z-50 border-b backdrop-blur-xl" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
       <nav className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
@@ -106,28 +130,64 @@ export const Header: React.FC = () => {
           </div>
 
           {isSearchFocused && searchQuery.trim().length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-3xl border shadow-2xl" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+            <div
+              className="fixed left-4 right-4 top-16 z-50 overflow-hidden rounded-3xl border shadow-2xl sm:left-6 sm:right-6 lg:left-8 lg:right-8"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
+            >
               <div className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text-tertiary)' }}>
                 {isFetching ? 'Searching' : 'Matching items'}
               </div>
               <div className="max-h-96 overflow-y-auto">
-                {searchResults.slice(0, 5).length > 0 ? (
-                  searchResults.slice(0, 5).map((product) => (
+                {visibleSearchResults.length > 0 ? (
+                  visibleSearchResults.map((product) => (
                     <Link
                       key={product.id}
                       href={`/products/${product.id}`}
                       onMouseDown={() => setIsSearchFocused(false)}
-                      className="block border-t px-4 py-3 transition hover:bg-black/5"
+                      onClick={() => {
+                        setIsSearchFocused(false);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="block cursor-pointer border-t px-4 py-3 transition hover:bg-black/5"
                       style={{ borderColor: 'var(--border-color)' }}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
-                          <p className="mt-1 text-sm line-clamp-1" style={{ color: 'var(--text-secondary)' }}>{product.category}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--border-color)' }}>
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
                         </div>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                          ETB {product.discount_price ?? product.price}
-                        </p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
+                              <p className="mt-1 text-sm line-clamp-1" style={{ color: 'var(--text-secondary)' }}>{product.description}</p>
+                            </div>
+                            <div className="shrink-0 text-right">
+                              <p className="text-sm font-semibold" style={{ color: 'var(--accent-secondary)' }}>
+                                ETB {product.discount_price ?? product.price}
+                              </p>
+                              {product.discount_price ? (
+                                <p className="text-xs line-through" style={{ color: 'var(--text-tertiary)' }}>
+                                  ETB {product.price}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between gap-3">
+                            <span className="rounded-full px-2 py-1 text-xs font-semibold" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-secondary)' }}>
+                              {product.category}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                              View details
+                              <ArrowRight className="h-3 w-3" />
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </Link>
                   ))
@@ -145,10 +205,19 @@ export const Header: React.FC = () => {
                 <Link
                   href={`/products?search=${encodeURIComponent(searchQuery.trim())}`}
                   onMouseDown={() => setIsSearchFocused(false)}
-                  className="text-sm font-semibold"
-                  style={{ color: 'var(--accent-secondary)' }}
+                  onClick={() => {
+                    setIsSearchFocused(false);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="block rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:bg-black/5"
+                  style={{ borderColor: 'var(--border-color)' }}
                 >
-                  View all results
+                  <span className="block" style={{ color: 'var(--text-primary)' }}>
+                    See all results in detail
+                  </span>
+                  <span className="mt-1 block text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    Open the full product list with filters, descriptions, and prices for “{searchQuery.trim()}”.
+                  </span>
                 </Link>
               </div>
             </div>

@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
@@ -14,7 +13,6 @@ import {
   ArrowRight,
   BadgePercent,
   CreditCard,
-  Search,
   ShieldCheck,
   ShoppingBag,
   Tag,
@@ -39,7 +37,6 @@ const ProductCarousel = dynamic(
 
 export default function Home() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
   const { data: products, isLoading } = useProducts({ minPrice: 0, maxPrice: 100000 });
   const { addItem } = useCartStore();
   const categoryShortcuts = [
@@ -65,12 +62,6 @@ export default function Home() {
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
     showCartToast({ productName: product.name });
-  };
-
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const query = searchQuery.trim();
-    router.push(query ? `/products?search=${encodeURIComponent(query)}` : '/products');
   };
 
   const handleCategoryShortcut = (category: string) => {
@@ -118,26 +109,21 @@ export default function Home() {
               Explore curated picks, quick category shortcuts, and a clean checkout flow built for a smooth shopping experience.
             </p>
 
-            <form onSubmit={handleSearch} className="mt-6 max-w-2xl rounded-3xl border p-3 shadow-2xl" style={{ borderColor: 'rgba(252,251,247,0.14)', backgroundColor: 'rgba(252,251,247,0.1)' }}>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.24em] text-white/70">
-                Search products
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
-                  <input
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Try cameras, earbuds, phones, or routers"
-                    className="w-full rounded-2xl border bg-white/95 py-4 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 focus:ring-[#fcbf49]"
-                    type="search"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="sm:min-w-40" style={{ backgroundColor: 'var(--accent-primary)', color: 'var(--bg-secondary)' }}>
-                  Search
-                </Button>
+            <div className="mt-6 max-w-2xl rounded-3xl border p-3 shadow-2xl" style={{ borderColor: 'rgba(252,251,247,0.14)', backgroundColor: 'rgba(252,251,247,0.1)' }}>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/70">
+                Browse products
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <p className="flex-1 text-sm leading-6 text-white/75">
+                  Jump straight into the catalog to search, filter, and compare products.
+                </p>
+                <Link href="/products" className="sm:min-w-40">
+                  <Button size="lg" className="w-full" style={{ backgroundColor: 'var(--accent-primary)', color: 'var(--bg-secondary)' }}>
+                    Browse products
+                  </Button>
+                </Link>
               </div>
-            </form>
+            </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
               {categoryShortcuts.map((category) => (

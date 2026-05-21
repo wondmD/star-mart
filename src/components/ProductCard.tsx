@@ -21,8 +21,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
       className="flex flex-col h-full transition-all border"
       style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
     >
-      <div className="relative w-full h-48 mb-4 overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-        <Image src={product.image_url} alt={product.name} fill sizes="(max-width: 768px) 100vw, 25vw" className="object-cover" />
+      <div className="relative w-full h-48 mb-4 overflow-hidden p-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+        <Image
+          src={product.image_url}
+          alt={product.name}
+          fill
+          sizes="(max-width: 768px) 100vw, 25vw"
+          className="object-contain"
+        />
 
         {discountPercentage > 0 && (
           <div

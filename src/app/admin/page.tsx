@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/Button';
 import { Card } from '@/components/FormElements';
 import { useAuthStore } from '@/stores/auth-store';
-import { getStoredAuthToken } from '@/services/auth';
+import { authService, getStoredAuthToken } from '@/services/auth';
 import { Product } from '@/types';
 
 const emptyForm = {
@@ -35,27 +35,71 @@ function formatCurrency(value: number): string {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuthStore();
+  const { user, loading: authLoading, setUser } = useAuthStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
 
   const isAdmin = Boolean(user?.is_admin);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnTo=/admin');
+    if (authLoading) {
+      return;
     }
-  }, [authLoading, router, user]);
+
+    if (!user) {
+      router.replace('/login?returnTo=/admin');
+      return;
+    }
+
+    if (user.is_admin) {
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    async function refreshAdminProfile() {
+      try {
+        const currentUser = await authService.getCurrentUser();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (currentUser) {
+          setUser(currentUser);
+
+          if (currentUser.is_admin) {
+            setIsCheckingAdmin(false);
+            return;
+          }
+        }
+
+        setIsCheckingAdmin(false);
+      } catch {
+        if (isMounted) {
+          setIsCheckingAdmin(false);
+        }
+      }
+    }
+
+    void refreshAdminProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authLoading, router, setUser, user]);
 
   useEffect(() => {
-    if (user?.is_admin) {
+    if (user?.is_admin && !isCheckingAdmin) {
       void loadProducts();
     }
-  }, [user?.is_admin]);
+  }, [isCheckingAdmin, user?.is_admin]);
 
   async function adminRequest<T>(
     url: string,
@@ -203,6 +247,14 @@ export default function AdminPage() {
         <Button className="mt-4" onClick={() => router.replace('/login?returnTo=/admin')}>
           Sign in
         </Button>
+      </div>
+    );
+  }
+
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" style={{ borderColor: 'var(--border-color)', borderTopColor: 'var(--accent-primary)' }} />
       </div>
     );
   }
