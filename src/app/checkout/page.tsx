@@ -12,6 +12,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { paymentService } from '@/services/payment';
+import { totalWithTax } from '@/lib/checkout-totals';
 import toast from 'react-hot-toast';
 import { CreditCard, Package, MapPin } from 'lucide-react';
 import { OrderSummarySkeleton } from '@/components/Skeleton';
@@ -54,7 +55,9 @@ export default function CheckoutPage() {
     );
   }
 
-  const orderTotal = getTotal() * 1.15;
+  const subtotal = getTotal();
+  const orderTotal = totalWithTax(subtotal);
+  const taxAmount = orderTotal - subtotal;
 
   const handleSubmit = async (values: {
     full_name: string;
@@ -226,7 +229,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 border-y py-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">ETB {getTotal().toFixed(2)}</span>
+                  <span className="font-semibold">ETB {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
@@ -235,7 +238,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax (15%)</span>
                   <span className="font-semibold">
-                    ETB {(getTotal() * 0.15).toFixed(2)}
+                    ETB {taxAmount.toFixed(2)}
                   </span>
                 </div>
               </div>

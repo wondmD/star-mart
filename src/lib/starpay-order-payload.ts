@@ -15,6 +15,21 @@ export function buildStarPayOrderInput(
     unit_price: item.price,
   }));
 
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.unit_price * item.quantity,
+    0,
+  );
+  const vatAmount = Math.round((order.total_amount - subtotal) * 100) / 100;
+
+  if (vatAmount > 0) {
+    items.push({
+      productId: crypto.randomUUID(),
+      quantity: 1,
+      item_name: 'VAT 15%',
+      unit_price: vatAmount,
+    });
+  }
+
   return {
     amount: order.total_amount,
     currency: 'ETB',
