@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+
+import { createSupabaseAdminClient } from '@/lib/supabase-admin';
+import { hasSupabaseConfig } from '@/lib/has-supabase';
 import { Product } from '@/types';
-import { upsertLocalProducts } from '@/lib/local-product-store';
 
 const seedProducts: Product[] = [
   {
@@ -53,6 +55,55 @@ const seedProducts: Product[] = [
   },
 ] as const;
 
+function getMissingColumn(errorMessage: string): string | null {
+  const match = errorMessage.match(/Could not find the '([^']+)' column/);
+  return match?.[1] ?? null;
+}
+
+async function upsertWithSchemaCompatibility(
+  supabase: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  products: Product[],
+) {
+  const removableColumns = new Set(['discount_price', 'category']);
+  const activeColumns = new Set<keyof Product>([
+    'id',
+    'name',
+    'description',
+    'price',
+    'discount_price',
+    'image_url',
+    'category',
+    'stock',
+    'created_at',
+  ]);
+
+  while (true) {
+    const payload = products.map((product) => {
+      const row: Record<string, unknown> = {};
+      for (const key of activeColumns) {
+        row[key] = product[key];
+      }
+      return row as Partial<Product>;
+    });
+
+    const { data, error } = await supabase
+      .from('products')
+      .upsert(payload, { onConflict: 'id' })
+      .select('*');
+
+    if (!error) {
+      return data;
+    }
+
+    const missingColumn = getMissingColumn(error.message);
+    if (!missingColumn || !removableColumns.has(missingColumn)) {
+      throw error;
+    }
+
+    activeColumns.delete(missingColumn as keyof Product);
+  }
+}
+
 export async function POST() {
   try {
     if (process.env.NODE_ENV === 'production') {
@@ -65,12 +116,35 @@ export async function POST() {
       );
     }
 
-    const data = await upsertLocalProducts(seedProducts);
+    if (!hasSupabaseConfig()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
+        },
+        { status: 503 }
+      );
+    }
+
+    const supabase = createSupabaseAdminClient();
+
+    if (!supabase) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Missing SUPABASE_SERVICE_ROLE_KEY. Product seeding requires the service role key to bypass RLS.',
+        },
+        { status: 503 }
+      );
+    }
+
+    const data = await upsertWithSchemaCompatibility(supabase, seedProducts as Product[]);
 
     return NextResponse.json(
       {
         success: true,
-        message: `Seeded ${data.length} products`,
+        message: `Seeded ${data?.length ?? 0} products in Supabase`,
         data,
       },
       { status: 201 }
