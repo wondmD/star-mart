@@ -20,6 +20,9 @@
 # production
 /build
 
+# local dev data (auth users, orders, products)
+.data/
+
 # misc
 .DS_Store
 *.pem

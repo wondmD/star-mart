@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
+/* Modern Design System */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #fcfbf7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f4efe5;
+  --text-primary: #003049;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --border-color: rgba(0, 48, 73, 0.12);
+  --accent-primary: #d62828;
+  --accent-secondary: #f77f00;
+  --accent-tertiary: #fcbf49;
+  --accent-light: rgba(214, 40, 40, 0.12);
+  --success: #f77f00;
+  --error: #d62828;
+  --warning: #fcbf49;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #003049;
+  --bg-secondary: #073b5a;
+  --bg-tertiary: #0e4a6a;
+  --text-primary: #fcfbf7;
+  --text-secondary: rgba(252, 251, 247, 0.82);
+  --text-tertiary: rgba(252, 251, 247, 0.62);
+  --border-color: rgba(252, 251, 247, 0.14);
+  --accent-primary: #fcbf49;
+  --accent-secondary: #f77f00;
+  --accent-tertiary: #d62828;
+  --accent-light: rgba(252, 191, 73, 0.16);
+  --success: #fcbf49;
+  --error: #d62828;
+  --warning: #f77f00;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-display: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  @apply transition-colors duration-200;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(214, 40, 40, 0.12), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(252, 191, 73, 0.14), transparent 28%),
+    var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+/* Modern focus states */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2;
+  outline-color: var(--accent-primary);
+}
+
