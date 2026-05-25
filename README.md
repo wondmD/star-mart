@@ -43,6 +43,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # StarPay (Server-side only)
 STARPAY_SECRET_KEY=your_secret_key
 NEXT_PUBLIC_STARPAY_API_KEY=your_public_key
+
+# App URL (used for security headers / CSP on production)
+NEXT_PUBLIC_APP_URL=https://star-mart.vercel.app
 ```
 
 ## Architecture
@@ -70,6 +73,9 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - Token-based authentication
 - Input validation and sanitization
 - Secure data transmission
+- HTTP security headers (CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) via `next.config.ts` and `src/lib/security-headers.ts`
+
+Set `NEXT_PUBLIC_APP_URL` to your production origin (e.g. `https://star-mart.vercel.app`) so Content-Security-Policy and CORS align with your deployment.
 
 ## Pages
 

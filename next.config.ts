@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next';
 import path from 'path';
 
+import { getSecurityHeaders } from './src/lib/security-headers';
+
 const projectRoot = path.resolve(__dirname);
 
 const nextConfig: NextConfig = {
@@ -13,6 +15,16 @@ const nextConfig: NextConfig = {
       '@tanstack/react-query',
       'react-hot-toast',
     ],
+  },
+  async headers() {
+    const securityHeaders = getSecurityHeaders();
+
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 
