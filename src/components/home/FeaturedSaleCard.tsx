@@ -16,7 +16,13 @@ export function FeaturedSaleCard({ product, onAddToCart }: FeaturedSaleCardProps
 
   return (
     <div id="featured-sale" className="relative justify-self-stretch lg:block">
-      <div className="pointer-events-none absolute -inset-1 rounded-3xl border-2 border-red-500/90 opacity-90 shadow-[0_0_36px_rgba(239,68,68,0.9)] motion-safe:animate-pulse" />
+      <div
+        className="pointer-events-none absolute -inset-1 rounded-3xl border-2 opacity-90 motion-safe:animate-pulse"
+        style={{
+          borderColor: 'var(--badge-featured-ring)',
+          boxShadow: '0 0 36px var(--glow-amber)',
+        }}
+      />
       <div
         className="relative overflow-hidden rounded-3xl border shadow-2xl"
         style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
@@ -30,23 +36,47 @@ export function FeaturedSaleCard({ product, onAddToCart }: FeaturedSaleCardProps
             sizes="(max-width: 1024px) 100vw, 380px"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-[#003049]/90 via-[#003049]/25 to-transparent" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to top, var(--overlay-cobalt), var(--overlay-cobalt-soft), transparent)`,
+            }}
+          />
           <div className="absolute left-4 top-4 flex flex-col gap-2">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#d62828] px-3 py-1 text-sm font-bold text-white shadow-lg">
+            <span
+              className="inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-sm font-bold shadow-lg"
+              style={{
+                backgroundColor: 'var(--badge-sale-bg)',
+                color: 'var(--badge-sale-text)',
+              }}
+            >
               <BadgePercent className="h-4 w-4" />
               Featured deal
             </span>
             {product.category ? (
-              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-[#003049] shadow-lg">
+              <span
+                className="inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold shadow-lg"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--brand-cobalt)',
+                }}
+              >
                 <Tag className="h-4 w-4" />
                 {product.category}
               </span>
             ) : null}
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <p className="text-xs uppercase tracking-[0.3em] text-[#fcbf49]">Curated pick</p>
+          <div className="absolute inset-x-0 bottom-0 p-5" style={{ color: 'var(--hero-text)' }}>
+            <p
+              className="text-xs uppercase tracking-[0.3em]"
+              style={{ color: 'var(--brand-amber)' }}
+            >
+              Curated pick
+            </p>
             <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">{product.name}</h2>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-white/80">{product.description}</p>
+            <p className="mt-3 max-w-sm text-sm leading-6" style={{ color: 'var(--hero-text-muted)' }}>
+              {product.description}
+            </p>
           </div>
         </div>
 

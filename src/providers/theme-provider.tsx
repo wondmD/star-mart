@@ -5,7 +5,13 @@ import { ReactNode } from 'react';
 
 export function CustomThemeProvider({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem disableTransitionOnChange>
+    <ThemeProvider
+      attribute="data-theme"
+      defaultTheme="light"
+      enableSystem
+      storageKey="starmart-theme"
+      disableTransitionOnChange={false}
+    >
       {children}
     </ThemeProvider>
   );

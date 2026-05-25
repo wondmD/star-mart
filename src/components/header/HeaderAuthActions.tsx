@@ -110,8 +110,11 @@ export function HeaderAuthActions({
         </Link>
         <Link
           href="/signup"
-          className="block rounded px-4 py-2 text-white transition"
-          style={{ backgroundColor: 'var(--accent-primary)' }}
+          className="block rounded px-4 py-2 font-semibold transition"
+          style={{
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--text-on-amber)',
+          }}
           onClick={onNavigate}
         >
           Sign Up
@@ -131,8 +134,11 @@ export function HeaderAuthActions({
       </Link>
       <Link
         href="/signup"
-        className="rounded px-4 py-2 text-white transition"
-        style={{ backgroundColor: 'var(--accent-primary)' }}
+        className="rounded px-4 py-2 font-semibold transition"
+        style={{
+          backgroundColor: 'var(--accent-primary)',
+          color: 'var(--text-on-amber)',
+        }}
       >
         Sign Up
       </Link>

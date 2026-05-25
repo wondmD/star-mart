@@ -16,6 +16,7 @@ interface StoredUser {
   full_name: string;
   phone?: string;
   avatar_url?: string;
+  is_admin?: boolean;
   password_hash: string;
   password_salt: string;
   created_at: string;
@@ -71,6 +72,7 @@ function toPublicUser(user: StoredUser): User {
     full_name: user.full_name,
     phone: user.phone,
     avatar_url: user.avatar_url,
+    is_admin: Boolean(user.is_admin),
     created_at: user.created_at,
   };
 }
@@ -103,6 +105,14 @@ export async function ensureDemoUser(): Promise<User> {
   );
 
   if (existing) {
+    if (!existing.is_admin) {
+      const upgradedUsers = users.map((user) =>
+        user.id === existing.id ? { ...user, is_admin: true } : user,
+      );
+      await writeUsers(upgradedUsers);
+      return toPublicUser({ ...existing, is_admin: true });
+    }
+
     return toPublicUser(existing);
   }
 

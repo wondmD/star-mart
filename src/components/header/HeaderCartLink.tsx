@@ -11,8 +11,11 @@ export function HeaderCartLink({ itemCount }: HeaderCartLinkProps) {
       <ShoppingCart className="h-6 w-6" style={{ color: 'var(--text-primary)' }} />
       {itemCount > 0 ? (
         <span
-          className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full text-xs text-white"
-          style={{ backgroundColor: 'var(--accent-primary)' }}
+          className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold"
+          style={{
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--text-on-amber)',
+          }}
         >
           {itemCount}
         </span>

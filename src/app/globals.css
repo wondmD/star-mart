@@ -1,45 +1,275 @@
 @import "tailwindcss";
 
-/* Modern Design System */
+/* =============================================================================
+   StarMart Design System — Amber (#FFC300) + Cobalt (#003566)
+   ============================================================================= */
+
 :root {
-  --bg-primary: #fcfbf7;
+  /* --- Brand anchors --- */
+  --brand-amber: #ffc300;
+  --brand-cobalt: #003566;
+
+  /* --- Amber scale --- */
+  --amber-50: #fffbea;
+  --amber-100: #fff4c2;
+  --amber-200: #ffe88a;
+  --amber-300: #ffdb52;
+  --amber-400: #ffce1a;
+  --amber-500: #ffc300;
+  --amber-600: #d9a600;
+  --amber-700: #a67f00;
+  --amber-800: #735800;
+  --amber-900: #403100;
+
+  /* --- Cobalt scale --- */
+  --cobalt-50: #e8f1fa;
+  --cobalt-100: #c5d9f0;
+  --cobalt-200: #8fb5e0;
+  --cobalt-300: #5991d0;
+  --cobalt-400: #2d6cb0;
+  --cobalt-500: #003566;
+  --cobalt-600: #002b52;
+  --cobalt-700: #00213e;
+  --cobalt-800: #00172a;
+  --cobalt-900: #000d16;
+
+  /* --- Surfaces (light) --- */
+  --bg-primary: #f4f8fc;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f4efe5;
-  --text-primary: #003049;
-  --text-secondary: #4b5563;
-  --text-tertiary: #6b7280;
-  --border-color: rgba(0, 48, 73, 0.12);
-  --accent-primary: #d62828;
-  --accent-secondary: #f77f00;
-  --accent-tertiary: #fcbf49;
-  --accent-light: rgba(214, 40, 40, 0.12);
-  --success: #f77f00;
-  --error: #d62828;
-  --warning: #fcbf49;
+  --bg-tertiary: #fff9e6;
+  --bg-elevated: #ffffff;
+  --bg-muted: #e8f1fa;
+  --bg-inverse: var(--brand-cobalt);
+  --bg-overlay: rgba(0, 53, 102, 0.55);
+
+  /* --- Typography (light) --- */
+  --text-primary: var(--brand-cobalt);
+  --text-secondary: #2a4f73;
+  --text-tertiary: #5a7f9e;
+  --text-muted: #7a9bb5;
+  --text-inverse: #ffffff;
+  --text-on-amber: var(--brand-cobalt);
+  --text-on-cobalt: #ffffff;
+  --text-link: var(--cobalt-400);
+  --text-link-hover: var(--brand-cobalt);
+
+  /* --- Borders (light) --- */
+  --border-color: rgba(0, 53, 102, 0.12);
+  --border-strong: rgba(0, 53, 102, 0.22);
+  --border-subtle: rgba(0, 53, 102, 0.06);
+  --border-focus: var(--brand-amber);
+  --border-accent: rgba(255, 195, 0, 0.45);
+
+  /* --- Brand accents (light) --- */
+  --accent-primary: var(--brand-amber);
+  --accent-secondary: var(--brand-cobalt);
+  --accent-tertiary: var(--cobalt-300);
+  --accent-light: rgba(255, 195, 0, 0.2);
+  --accent-muted: rgba(0, 53, 102, 0.08);
+  --accent-hover: var(--amber-600);
+  --accent-pressed: var(--amber-700);
+
+  /* --- Interactive (light) --- */
+  --button-primary-bg: var(--brand-amber);
+  --button-primary-text: var(--brand-cobalt);
+  --button-primary-hover-bg: var(--brand-cobalt);
+  --button-primary-hover-text: #ffffff;
+  --button-secondary-bg: var(--bg-secondary);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border-color);
+  --button-outline-border: var(--brand-cobalt);
+  --button-outline-text: var(--brand-cobalt);
+  --button-danger-bg: #c62828;
+  --button-danger-text: #ffffff;
+
+  /* --- Feedback --- */
+  --success: #0f766e;
+  --success-light: rgba(15, 118, 110, 0.12);
+  --error: #b42318;
+  --error-light: rgba(180, 35, 24, 0.1);
+  --warning: var(--amber-600);
+  --warning-light: rgba(255, 195, 0, 0.22);
+  --info: var(--cobalt-400);
+  --info-light: rgba(0, 53, 102, 0.08);
+
+  /* --- Shadows (light) --- */
+  --shadow-xs: 0 1px 2px rgba(0, 53, 102, 0.06);
+  --shadow-sm: 0 4px 12px rgba(0, 53, 102, 0.08);
+  --shadow-md: 0 10px 24px rgba(0, 53, 102, 0.1);
+  --shadow-lg: 0 18px 40px rgba(0, 53, 102, 0.14);
+  --shadow-amber: 0 12px 28px rgba(255, 195, 0, 0.28);
+  --shadow-cobalt: 0 14px 32px rgba(0, 53, 102, 0.2);
+  --glow-amber: rgba(255, 195, 0, 0.45);
+  --glow-cobalt: rgba(0, 53, 102, 0.25);
+
+  /* --- Hero / marketing --- */
+  --hero-gradient: linear-gradient(
+    135deg,
+    var(--cobalt-900) 0%,
+    var(--cobalt-700) 48%,
+    var(--cobalt-600) 100%
+  );
+  --hero-text: #ffffff;
+  --hero-text-muted: rgba(255, 255, 255, 0.82);
+  --hero-surface: rgba(255, 255, 255, 0.1);
+  --hero-border: rgba(255, 255, 255, 0.16);
+  --hero-glow-amber: rgba(255, 195, 0, 0.22);
+  --hero-glow-cobalt: rgba(0, 53, 102, 0.35);
+  --overlay-cobalt: rgba(0, 53, 102, 0.88);
+  --overlay-cobalt-soft: rgba(0, 53, 102, 0.28);
+  --badge-sale-bg: var(--brand-amber);
+  --badge-sale-text: var(--brand-cobalt);
+  --badge-featured-ring: var(--brand-amber);
+
+  /* --- Form controls --- */
+  --input-bg: var(--bg-secondary);
+  --input-border: var(--border-color);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-tertiary);
+  --input-focus-ring: rgba(255, 195, 0, 0.45);
+
+  /* --- Chrome --- */
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --footer-bg: var(--brand-cobalt);
+  --footer-text: rgba(255, 255, 255, 0.92);
+  --footer-text-muted: rgba(255, 255, 255, 0.68);
+  --scrollbar-track: var(--bg-secondary);
+  --scrollbar-thumb: var(--cobalt-200);
+  --scrollbar-thumb-hover: var(--cobalt-300);
+  --selection-bg: var(--brand-amber);
+  --selection-text: var(--brand-cobalt);
+  --focus-ring: var(--brand-amber);
+  --surface-gradient: radial-gradient(
+      circle at top left,
+      rgba(255, 195, 0, 0.14),
+      transparent 34%
+    ),
+    radial-gradient(circle at bottom right, rgba(0, 53, 102, 0.08), transparent 30%),
+    var(--bg-primary);
 }
 
-[data-theme="dark"] {
-  --bg-primary: #003049;
-  --bg-secondary: #073b5a;
-  --bg-tertiary: #0e4a6a;
-  --text-primary: #fcfbf7;
-  --text-secondary: rgba(252, 251, 247, 0.82);
-  --text-tertiary: rgba(252, 251, 247, 0.62);
-  --border-color: rgba(252, 251, 247, 0.14);
-  --accent-primary: #fcbf49;
-  --accent-secondary: #f77f00;
-  --accent-tertiary: #d62828;
-  --accent-light: rgba(252, 191, 73, 0.16);
-  --success: #fcbf49;
-  --error: #d62828;
-  --warning: #f77f00;
+[data-theme='dark'] {
+  /* --- Surfaces (dark) --- */
+  --bg-primary: #000d16;
+  --bg-secondary: #00172a;
+  --bg-tertiary: #00213e;
+  --bg-elevated: #002b52;
+  --bg-muted: #002b52;
+  --bg-inverse: var(--brand-amber);
+  --bg-overlay: rgba(0, 7, 14, 0.72);
+
+  /* --- Typography (dark) --- */
+  --text-primary: #f4f8fc;
+  --text-secondary: rgba(244, 248, 252, 0.82);
+  --text-tertiary: rgba(244, 248, 252, 0.6);
+  --text-muted: rgba(244, 248, 252, 0.45);
+  --text-inverse: var(--brand-cobalt);
+  --text-on-amber: var(--brand-cobalt);
+  --text-on-cobalt: #ffffff;
+  --text-link: var(--amber-300);
+  --text-link-hover: var(--brand-amber);
+
+  /* --- Borders (dark) --- */
+  --border-color: rgba(255, 195, 0, 0.14);
+  --border-strong: rgba(255, 195, 0, 0.28);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-focus: var(--brand-amber);
+  --border-accent: rgba(255, 195, 0, 0.35);
+
+  /* --- Brand accents (dark) --- */
+  --accent-primary: var(--brand-amber);
+  --accent-secondary: var(--amber-300);
+  --accent-tertiary: var(--cobalt-300);
+  --accent-light: rgba(255, 195, 0, 0.16);
+  --accent-muted: rgba(255, 195, 0, 0.08);
+  --accent-hover: var(--amber-400);
+  --accent-pressed: var(--amber-500);
+
+  /* --- Interactive (dark) --- */
+  --button-primary-bg: var(--brand-amber);
+  --button-primary-text: var(--brand-cobalt);
+  --button-primary-hover-bg: var(--amber-300);
+  --button-primary-hover-text: var(--brand-cobalt);
+  --button-secondary-bg: var(--bg-elevated);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border-color);
+  --button-outline-border: var(--brand-amber);
+  --button-outline-text: var(--brand-amber);
+  --button-danger-bg: #ef4444;
+  --button-danger-text: #ffffff;
+
+  /* --- Feedback (dark) --- */
+  --success: #2dd4bf;
+  --success-light: rgba(45, 212, 191, 0.14);
+  --error: #f87171;
+  --error-light: rgba(248, 113, 113, 0.14);
+  --warning: var(--brand-amber);
+  --warning-light: rgba(255, 195, 0, 0.14);
+  --info: var(--cobalt-300);
+  --info-light: rgba(89, 145, 208, 0.14);
+
+  /* --- Shadows (dark) --- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 20px 44px rgba(0, 0, 0, 0.5);
+  --shadow-amber: 0 12px 32px rgba(255, 195, 0, 0.22);
+  --shadow-cobalt: 0 14px 36px rgba(0, 0, 0, 0.45);
+  --glow-amber: rgba(255, 195, 0, 0.35);
+  --glow-cobalt: rgba(0, 53, 102, 0.55);
+
+  /* --- Hero / marketing (dark) --- */
+  --hero-gradient: linear-gradient(
+    135deg,
+    #00050a 0%,
+    var(--cobalt-800) 42%,
+    var(--cobalt-600) 100%
+  );
+  --hero-text: #ffffff;
+  --hero-text-muted: rgba(255, 255, 255, 0.8);
+  --hero-surface: rgba(255, 255, 255, 0.08);
+  --hero-border: rgba(255, 195, 0, 0.18);
+  --hero-glow-amber: rgba(255, 195, 0, 0.28);
+  --hero-glow-cobalt: rgba(0, 53, 102, 0.5);
+  --overlay-cobalt: rgba(0, 13, 22, 0.92);
+  --overlay-cobalt-soft: rgba(0, 23, 42, 0.55);
+  --badge-sale-bg: var(--brand-amber);
+  --badge-sale-text: var(--brand-cobalt);
+
+  /* --- Form controls (dark) --- */
+  --input-bg: var(--bg-elevated);
+  --input-border: var(--border-color);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-tertiary);
+  --input-focus-ring: rgba(255, 195, 0, 0.35);
+
+  /* --- Chrome (dark) --- */
+  --header-bg: rgba(0, 23, 42, 0.92);
+  --footer-bg: #00050a;
+  --footer-text: rgba(255, 255, 255, 0.92);
+  --footer-text-muted: rgba(255, 255, 255, 0.62);
+  --scrollbar-track: var(--bg-secondary);
+  --scrollbar-thumb: var(--cobalt-600);
+  --scrollbar-thumb-hover: var(--cobalt-500);
+  --selection-bg: var(--brand-amber);
+  --selection-text: var(--brand-cobalt);
+  --focus-ring: var(--brand-amber);
+  --surface-gradient: radial-gradient(
+      circle at top left,
+      rgba(255, 195, 0, 0.1),
+      transparent 36%
+    ),
+    radial-gradient(circle at bottom right, rgba(0, 53, 102, 0.35), transparent 32%),
+    var(--bg-primary);
 }
 
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-  --font-display: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --color-amber: var(--brand-amber);
+  --color-cobalt: var(--brand-cobalt);
+  --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-display: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -50,13 +280,15 @@
 html {
   scroll-behavior: smooth;
   background: var(--bg-primary);
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(214, 40, 40, 0.12), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(252, 191, 73, 0.14), transparent 28%),
-    var(--bg-primary);
+  background: var(--surface-gradient);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-weight: 400;
@@ -64,38 +296,60 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--scrollbar-thumb-hover);
 }
 
-/* Selection styling */
 ::selection {
-  background-color: var(--accent-primary);
-  color: var(--bg-primary);
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
-/* Modern focus states */
 :focus {
   outline: none;
 }
 
 :focus-visible {
   @apply outline-2 outline-offset-2;
-  outline-color: var(--accent-primary);
+  outline-color: var(--focus-ring);
 }
 
+/* Utility surfaces */
+.surface-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.bg-brand-cobalt {
+  background-color: var(--brand-cobalt);
+}
+
+.bg-brand-amber {
+  background-color: var(--brand-amber);
+}

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/stores/auth-store';
-import { authService } from '@/services/auth';
+import { authService, getLoginPath } from '@/services/auth';
 import { adminRequest } from '@/lib/admin-api';
 import { AdminLoadingState, AdminSignInRequired, AdminAccessDenied } from '@/components/admin/AdminAccessStates';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
@@ -31,7 +31,9 @@ export default function AdminPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const hasRefreshedProfile = useRef(false);
 
   useEffect(() => {
     if (authLoading) {
@@ -39,7 +41,7 @@ export default function AdminPage() {
     }
 
     if (!user) {
-      router.replace('/login?returnTo=/admin');
+      router.replace(getLoginPath({ returnTo: '/admin' }));
       return;
     }
 
@@ -48,6 +50,12 @@ export default function AdminPage() {
       return;
     }
 
+    if (hasRefreshedProfile.current) {
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    hasRefreshedProfile.current = true;
     let isMounted = true;
 
     async function refreshAdminProfile() {
@@ -59,14 +67,8 @@ export default function AdminPage() {
 
         if (currentUser) {
           setUser(currentUser);
-          if (currentUser.is_admin) {
-            setIsCheckingAdmin(false);
-            return;
-          }
         }
-
-        setIsCheckingAdmin(false);
-      } catch {
+      } finally {
         if (isMounted) {
           setIsCheckingAdmin(false);
         }
@@ -78,7 +80,7 @@ export default function AdminPage() {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, router, setUser, user]);
+  }, [authLoading, router, setUser, user?.id, user?.is_admin]);
 
   useEffect(() => {
     if (user?.is_admin && !isCheckingAdmin) {
@@ -220,8 +222,10 @@ export default function AdminPage() {
         />
         <AdminProductList
           products={products}
+          searchQuery={searchQuery}
           isLoading={isLoadingProducts}
           deletingId={deletingId}
+          onSearchChange={setSearchQuery}
           onEdit={startEdit}
           onDelete={(product) => void handleDelete(product)}
         />

@@ -1,6 +1,7 @@
 'use client';
 
-import { PencilLine, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { PencilLine, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/FormElements';
 import { formatAdminCurrency } from '@/lib/admin-api';
@@ -8,19 +9,33 @@ import { Product } from '@/types';
 
 interface AdminProductListProps {
   products: Product[];
+  searchQuery: string;
   isLoading: boolean;
   deletingId: string | null;
+  onSearchChange: (value: string) => void;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
 }
 
 export function AdminProductList({
   products,
+  searchQuery,
   isLoading,
   deletingId,
+  onSearchChange,
   onEdit,
   onDelete,
 }: AdminProductListProps) {
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const visibleProducts = normalizedSearch
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(normalizedSearch) ||
+          product.description.toLowerCase().includes(normalizedSearch) ||
+          product.category.toLowerCase().includes(normalizedSearch),
+      )
+    : products;
+
   return (
     <Card className="space-y-5">
       <div className="flex items-center justify-between gap-4">
@@ -36,9 +51,24 @@ export function AdminProductList({
           className="rounded-full px-3 py-1 text-sm font-semibold"
           style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-secondary)' }}
         >
-          {products.length} items
+          {visibleProducts.length} items
         </span>
       </div>
+
+      <label className="relative block">
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2"
+          style={{ color: 'var(--text-tertiary)' }}
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Search products…"
+          className="w-full rounded-2xl border py-3 pl-11 pr-4 outline-none"
+          style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
+        />
+      </label>
 
       <div className="space-y-4">
         {isLoading
@@ -53,34 +83,57 @@ export function AdminProductList({
                 <div className="mt-3 h-4 w-full rounded bg-black/10" />
               </div>
             ))
-          : products.length > 0
-            ? products.map((product) => (
+          : visibleProducts.length > 0
+            ? visibleProducts.map((product) => (
                 <div
                   key={product.id}
                   className="rounded-3xl border p-4"
                   style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-                          {product.name}
-                        </h3>
-                        {product.discount_price ? (
-                          <span className="rounded-full bg-[var(--error)] px-2 py-1 text-[11px] font-semibold text-white">
-                            On sale
-                          </span>
-                        ) : null}
+                    <div className="flex gap-4">
+                      <div
+                        className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border"
+                        style={{ borderColor: 'var(--border-color)' }}
+                      >
+                        <Image
+                          src={product.image_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
                       </div>
-                      <p className="text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
-                        {product.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                        <span>{product.category}</span>
-                        <span>•</span>
-                        <span>{product.stock} in stock</span>
-                        <span>•</span>
-                        <span>{formatAdminCurrency(product.discount_price ?? product.price)}</span>
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+                            {product.name}
+                          </h3>
+                          {product.discount_price ? (
+                            <span
+                            className="rounded-full px-2 py-1 text-[11px] font-semibold"
+                            style={{
+                              backgroundColor: 'var(--badge-sale-bg)',
+                              color: 'var(--badge-sale-text)',
+                            }}
+                          >
+                              On sale
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+                          {product.description}
+                        </p>
+                        <div
+                          className="flex flex-wrap gap-2 text-sm font-semibold"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
+                          <span>{product.category}</span>
+                          <span>•</span>
+                          <span>{product.stock} in stock</span>
+                          <span>•</span>
+                          <span>{formatAdminCurrency(product.discount_price ?? product.price)}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -107,7 +160,9 @@ export function AdminProductList({
                 className="rounded-3xl border border-dashed p-6 text-center"
                 style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
               >
-                No products yet. Create the first item using the form.
+                {normalizedSearch
+                  ? 'No products match your search.'
+                  : 'No products yet. Create the first item using the form.'}
               </div>
             )}
       </div>

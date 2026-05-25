@@ -12,6 +12,7 @@ A production-ready mini e-commerce platform built with Next.js, TypeScript, Tail
 - **Checkout Flow**: Complete checkout with delivery address collection
 - **Payment Integration**: Secure StarPay payment processing via server-side API
 - **Order Management**: View and track all user orders
+- **Admin Dashboard**: Product CRUD at `/admin` for admin accounts
 - **Responsive Design**: Mobile-first responsive UI with Tailwind CSS
 
 ## 🛠️ Quick Start
@@ -37,6 +38,7 @@ Create a `.env.local` file:
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # StarPay (Server-side only)
 STARPAY_SECRET_KEY=your_secret_key
@@ -80,6 +82,22 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed:
 - `/auth/signup` - Sign up page
 - `/orders` - Orders listing
 - `/order-confirmation/[id]` - Order confirmation
+- `/admin` - Admin product CRUD (admin users only)
+
+## Admin product management
+
+1. Sign in with an account that has `is_admin = true` in the Supabase `users` table.
+2. Open `/admin` (or use the **Admin** link in the header when signed in as admin).
+3. Create, edit, or delete products from the dashboard.
+
+In local development without Supabase service role, products are stored in `.data/products.json`. With `USE_LOCAL_AUTH=true`, the demo user (`demo@example.com` / `Demo@123`) is an admin.
+
+```sql
+-- Grant admin access in Supabase (must match your sign-in email exactly)
+UPDATE public.users SET is_admin = true WHERE email = 'your@email.com';
+```
+
+Optional env override (server-side): `ADMIN_EMAILS=wondmenehdereje@gmail.com` in `.env.local`.
 
 ## Deployment
 
