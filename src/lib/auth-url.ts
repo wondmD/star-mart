@@ -35,6 +35,13 @@ export function getVerifyEmailUrl(email: string, reason?: 'exists' | 'created'):
   return `/auth/verify-email?${params.toString()}`;
 }
 
+export function getSignupUrl(returnTo?: string): string {
+  const safeReturnTo = getSafeInternalPath(returnTo);
+  return safeReturnTo
+    ? `/auth/signup?returnTo=${encodeURIComponent(safeReturnTo)}`
+    : '/auth/signup';
+}
+
 export function getLoginUrl(options?: { verified?: boolean; email?: string; returnTo?: string }): string {
   const params = new URLSearchParams();
   if (options?.verified) {

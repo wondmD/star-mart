@@ -1,42 +1,24 @@
 'use client';
 
-import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, ShoppingCart, Menu, X, LogOut, User, Moon, Sun, Search, ShieldCheck } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Menu, X } from 'lucide-react';
 import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
-import toast from 'react-hot-toast';
-import { useTheme } from 'next-themes';
-import { productService } from '@/services/products';
+import { HeaderLogo } from '@/components/header/HeaderLogo';
+import { HeaderSearch } from '@/components/header/HeaderSearch';
+import { HeaderNavLinks } from '@/components/header/HeaderNavLinks';
+import { HeaderThemeToggle } from '@/components/header/HeaderThemeToggle';
+import { HeaderCartLink } from '@/components/header/HeaderCartLink';
+import { HeaderAuthActions } from '@/components/header/HeaderAuthActions';
+import { HeaderMobileMenu } from '@/components/header/HeaderMobileMenu';
 
 export const Header: React.FC = () => {
-  const router = useRouter();
   const headerRef = useRef<HTMLElement | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
   const { items } = useCartStore();
   const { user, logout } = useAuthStore();
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
-  const deferredSearchQuery = useDeferredValue(searchQuery.trim());
-  const shouldFetchSuggestions = deferredSearchQuery.length > 0;
-  const { data: searchResults = [], isFetching } = useQuery({
-    queryKey: ['header-search-suggestions', deferredSearchQuery],
-    queryFn: () => productService.getProducts({ search: deferredSearchQuery, minPrice: 0, maxPrice: 100000 }),
-    enabled: shouldFetchSuggestions,
-    staleTime: 1000 * 60 * 2,
-  });
-  const visibleSearchResults = searchResults.slice(0, 5);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!mobileMenuOpen) {
@@ -45,329 +27,66 @@ export const Header: React.FC = () => {
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null;
-
       if (!target || headerRef.current?.contains(target)) {
         return;
       }
-
       setMobileMenuOpen(false);
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-    };
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [mobileMenuOpen]);
 
-  const handleLogout = async () => {
-    if (isLoggingOut) {
-      return;
-    }
-
-    setIsLoggingOut(true);
-    let loggedOutSuccessfully = false;
-
-    try {
-      const { authService } = await import('@/services/auth');
-      await authService.logout();
-      loggedOutSuccessfully = true;
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Logout failed');
-    } finally {
-      logout();
-      setMobileMenuOpen(false);
-      router.replace('/');
-      router.refresh();
-      if (loggedOutSuccessfully) {
-        toast.success('Logged out successfully');
-      }
-      setIsLoggingOut(false);
-    }
-  };
-
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const trimmedQuery = searchQuery.trim();
-
-    if (!trimmedQuery) {
-      return;
-    }
-
-    setIsSearchFocused(false);
-    setMobileMenuOpen(false);
-    router.push(`/products?search=${encodeURIComponent(trimmedQuery)}`);
-  };
-
   return (
-    <header ref={headerRef} className="sticky top-0 z-50 border-b backdrop-blur-xl" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-      <nav className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-primary)' }}>
-            <span className="text-white font-bold">S</span>
-          </div>
-          <span className="hidden sm:inline" style={{ color: 'var(--text-primary)' }}>StarMart</span>
-        </Link>
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 border-b backdrop-blur-xl"
+      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
+    >
+      <nav className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <HeaderLogo />
+        <HeaderSearch />
 
-        {/* Search Bar */}
-        <form className="relative flex-1 max-w-2xl mx-2 md:mx-4" onSubmit={handleSearchSubmit}>
-          <div className="flex w-full items-center rounded-full border px-4 py-2" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-            <Search className="w-4 h-4" style={{ color: 'var(--text-tertiary)' }} />
-            <input
-              name="search"
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setTimeout(() => setIsSearchFocused(false), 120)}
-              placeholder="Search products, brands, and deals"
-              className="ml-3 w-full bg-transparent outline-none text-sm"
-              style={{ color: 'var(--text-primary)' }}
-              autoComplete="off"
-            />
-          </div>
-
-          {isSearchFocused && searchQuery.trim().length > 0 && (
-            <div
-              className="fixed left-4 right-4 top-16 z-50 overflow-hidden rounded-3xl border shadow-2xl sm:left-6 sm:right-6 lg:left-8 lg:right-8"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
-            >
-              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text-tertiary)' }}>
-                {isFetching ? 'Searching' : 'Matching items'}
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                {visibleSearchResults.length > 0 ? (
-                  visibleSearchResults.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/products/${product.id}`}
-                      onMouseDown={() => setIsSearchFocused(false)}
-                      onClick={() => {
-                        setIsSearchFocused(false);
-                        setMobileMenuOpen(false);
-                      }}
-                      className="block cursor-pointer border-t px-4 py-3 transition hover:bg-black/5"
-                      style={{ borderColor: 'var(--border-color)' }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--border-color)' }}>
-                          <Image
-                            src={product.image_url}
-                            alt={product.name}
-                            fill
-                            sizes="56px"
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
-                              <p className="mt-1 text-sm line-clamp-1" style={{ color: 'var(--text-secondary)' }}>{product.description}</p>
-                            </div>
-                            <div className="shrink-0 text-right">
-                              <p className="text-sm font-semibold" style={{ color: 'var(--accent-secondary)' }}>
-                                ETB {product.discount_price ?? product.price}
-                              </p>
-                              {product.discount_price ? (
-                                <p className="text-xs line-through" style={{ color: 'var(--text-tertiary)' }}>
-                                  ETB {product.price}
-                                </p>
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="mt-2 flex items-center justify-between gap-3">
-                            <span className="rounded-full px-2 py-1 text-xs font-semibold" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-secondary)' }}>
-                              {product.category}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--text-tertiary)' }}>
-                              View details
-                              <ArrowRight className="h-3 w-3" />
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                ) : isFetching ? (
-                  <div className="border-t px-4 py-4 text-sm" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}>
-                    Looking for matches...
-                  </div>
-                ) : (
-                  <div className="border-t px-4 py-4 text-sm" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}>
-                    No matching items found.
-                  </div>
-                )}
-              </div>
-              <div className="border-t px-4 py-3" style={{ borderColor: 'var(--border-color)' }}>
-                <Link
-                  href={`/products?search=${encodeURIComponent(searchQuery.trim())}`}
-                  onMouseDown={() => setIsSearchFocused(false)}
-                  onClick={() => {
-                    setIsSearchFocused(false);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:bg-black/5"
-                  style={{ borderColor: 'var(--border-color)' }}
-                >
-                  <span className="block" style={{ color: 'var(--text-primary)' }}>
-                    See all results in detail
-                  </span>
-                  <span className="mt-1 block text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    Open the full product list with filters, descriptions, and prices for “{searchQuery.trim()}”.
-                  </span>
-                </Link>
-              </div>
-            </div>
-          )}
-        </form>
-
-        {/* Desktop Menu */}
-        <div className="hidden xl:flex items-center gap-8 shrink-0">
-          <Link href="/" className="transition" style={{ color: 'var(--text-secondary)' }}>
-            Home
-          </Link>
-          <Link href="/products" className="transition" style={{ color: 'var(--text-secondary)' }}>
-            Shop
-          </Link>
-          {user && (
-            <Link href="/orders" className="transition" style={{ color: 'var(--text-secondary)' }}>
-              Orders
-            </Link>
-          )}
-          {user?.is_admin && (
-            <Link href="/admin" className="inline-flex items-center gap-2 transition" style={{ color: 'var(--text-secondary)' }}>
-              <ShieldCheck className="w-4 h-4" />
-              Admin
-            </Link>
-          )}
+        <div className="hidden shrink-0 items-center gap-8 xl:flex">
+          <HeaderNavLinks user={user} />
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4 shrink-0">
-          {/* Theme Toggle */}
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-lg transition border"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
-              ) : (
-                <Moon className="w-5 h-5" style={{ color: 'var(--accent-primary)' }} />
-              )}
-            </button>
-          )}
+        <div className="flex shrink-0 items-center gap-4">
+          <HeaderThemeToggle />
+          <HeaderCartLink itemCount={cartItemCount} />
+          <HeaderAuthActions
+            user={user}
+            logout={logout}
+            isLoggingOut={isLoggingOut}
+            onLogoutStart={() => setIsLoggingOut(true)}
+            onLogoutEnd={() => setIsLoggingOut(false)}
+          />
 
-          {/* Cart */}
-          <Link href="/cart" className="relative p-2 transition">
-            <ShoppingCart className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
-            {cartItemCount > 0 && (
-              <span className="absolute top-0 right-0 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-primary)' }}>
-                {cartItemCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Auth Links */}
-          {user ? (
-            <div className="hidden sm:flex items-center gap-4">
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 transition"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                <User className="w-5 h-5" />
-                <span>{user.full_name}</span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="flex items-center gap-2 transition disabled:opacity-60"
-                style={{ color: 'var(--error)' }}
-              >
-                <LogOut className="w-5 h-5" />
-                <span>{isLoggingOut ? 'Logging out…' : 'Logout'}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="hidden sm:flex items-center gap-2">
-              <Link href="/login" className="px-4 py-2 rounded transition border" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>
-                Login
-              </Link>
-              <Link href="/signup" className="text-white px-4 py-2 rounded transition" style={{ backgroundColor: 'var(--accent-primary)' }}>
-                Sign Up
-              </Link>
-            </div>
-          )}
-
-          {/* Mobile Menu Button */}
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2"
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="p-2 md:hidden"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
             {mobileMenuOpen ? (
-              <X className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+              <X className="h-6 w-6" style={{ color: 'var(--text-primary)' }} />
             ) : (
-              <Menu className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+              <Menu className="h-6 w-6" style={{ color: 'var(--text-primary)' }} />
             )}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
-          <div className="px-4 py-4 space-y-4">
-            <Link href="/" className="block transition" style={{ color: 'var(--text-secondary)' }}>
-              Home
-            </Link>
-            <Link href="/products" className="block transition" style={{ color: 'var(--text-secondary)' }}>
-              Shop
-            </Link>
-            {user && (
-              <>
-                <Link href="/orders" className="block transition" style={{ color: 'var(--text-secondary)' }}>
-                  Orders
-                </Link>
-                {user.is_admin && (
-                  <Link href="/admin" className="inline-flex items-center gap-2 transition" style={{ color: 'var(--text-secondary)' }}>
-                    <ShieldCheck className="w-4 h-4" />
-                    Admin
-                  </Link>
-                )}
-                <Link href="/profile" className="block transition" style={{ color: 'var(--text-secondary)' }}>
-                  Profile
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="w-full text-left transition disabled:opacity-60"
-                  style={{ color: 'var(--error)' }}
-                >
-                  {isLoggingOut ? 'Logging out…' : 'Logout'}
-                </button>
-              </>
-            )}
-            {!user && (
-              <>
-                <Link href="/login" className="block transition" style={{ color: 'var(--text-secondary)' }}>
-                  Login
-                </Link>
-                <Link href="/signup" className="block text-white px-4 py-2 rounded transition" style={{ backgroundColor: 'var(--accent-primary)' }}>
-                  Sign Up
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {mobileMenuOpen ? (
+        <HeaderMobileMenu
+          user={user}
+          logout={logout}
+          isLoggingOut={isLoggingOut}
+          onLogoutStart={() => setIsLoggingOut(true)}
+          onLogoutEnd={() => setIsLoggingOut(false)}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+      ) : null}
     </header>
   );
 };

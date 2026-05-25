@@ -1,37 +1,18 @@
 'use client';
 
 import { useState, use } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useProduct } from '@/hooks/useProducts';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/FormElements';
 import { useCartStore } from '@/stores/cart-store';
 import { showCartToast } from '@/lib/cart-toast';
-import { ArrowLeft, ShoppingCart } from 'lucide-react';
+import { ProductDetailSkeleton } from '@/components/product/ProductDetailSkeleton';
+import { ProductImageGallery } from '@/components/product/ProductImageGallery';
+import { ProductPurchasePanel } from '@/components/product/ProductPurchasePanel';
 
 interface Props {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-function ProductDetailSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-6 w-40 rounded bg-gray-200" />
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <div className="h-96 rounded-lg bg-gray-200 md:h-125" />
-        <div className="space-y-4">
-          <div className="h-5 w-24 rounded bg-gray-200" />
-          <div className="h-10 w-3/4 rounded bg-gray-200" />
-          <div className="h-8 w-1/2 rounded bg-gray-200" />
-          <div className="h-20 w-full rounded bg-gray-200" />
-          <div className="h-36 w-full rounded bg-gray-200" />
-        </div>
-      </div>
-    </div>
-  );
+  params: Promise<{ id: string }>;
 }
 
 export default function ProductDetailsPage({ params }: Props) {
@@ -53,8 +34,8 @@ export default function ProductDetailsPage({ params }: Props) {
 
   if (error || !product) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-600 text-lg">Product not found</p>
+      <div className="py-12 text-center">
+        <p className="text-lg text-red-600">Product not found</p>
         <Link href="/products">
           <Button className="mt-4">Back to Products</Button>
         </Link>
@@ -67,128 +48,20 @@ export default function ProductDetailsPage({ params }: Props) {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8">
       <Link href="/products" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700">
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="h-4 w-4" />
         Back to Products
       </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Image */}
-        <div className="relative">
-          <div className="relative h-96 md:h-125 bg-gray-100 rounded-lg overflow-hidden">
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              className="object-cover"
-              priority
-            />
-            {discountPercentage > 0 && (
-              <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg text-lg font-bold">
-                -{discountPercentage}%
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-2">
-              {product.category}
-            </span>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-baseline gap-3">
-              {product.discount_price ? (
-                <>
-                  <span className="text-3xl font-bold text-blue-600">
-                    ETB {product.discount_price.toFixed(2)}
-                  </span>
-                  <span className="text-xl text-gray-400 line-through">
-                    ETB {product.price.toFixed(2)}
-                  </span>
-                </>
-              ) : (
-                <span className="text-3xl font-bold text-blue-600">
-                  ETB {product.price.toFixed(2)}
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-gray-600">
-              {product.stock > 0 ? (
-                <span className="text-green-600 font-semibold">{product.stock} items in stock</span>
-              ) : (
-                <span className="text-red-600 font-semibold">Out of stock</span>
-              )}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-gray-900">Description</h3>
-            <p className="text-gray-700 leading-relaxed">{product.description}</p>
-          </div>
-
-          {/* Add to Cart */}
-          <Card className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-100"
-                >
-                  −
-                </button>
-                <span className="text-lg font-semibold w-8 text-center">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-100"
-                  disabled={quantity >= product.stock}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <Button
-              size="lg"
-              className="w-full flex items-center justify-center gap-2"
-              disabled={product.stock === 0}
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="w-5 h-5" />
-              Add to Cart
-            </Button>
-          </Card>
-
-          {/* Additional Info */}
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t">
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-900">Free Shipping</p>
-              <p className="text-xs text-gray-600">On orders over ETB 500</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-900">Easy Returns</p>
-              <p className="text-xs text-gray-600">30-day return policy</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-900">Secure Payment</p>
-              <p className="text-xs text-gray-600">100% encrypted</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Related Products */}
-      <div className="pt-8 border-t">
-        <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-        <div className="bg-gray-50 p-12 rounded-lg text-center">
-          <p className="text-gray-600">Related products section coming soon</p>
-        </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <ProductImageGallery product={product} discountPercentage={discountPercentage} />
+        <ProductPurchasePanel
+          product={product}
+          quantity={quantity}
+          onQuantityChange={setQuantity}
+          onAddToCart={handleAddToCart}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { AuthApiError, isAuthApiError } from '@/lib/auth-api-error';
 import { AUTH_ERROR_CODES } from '@/lib/auth-codes';
-import { getAuthRedirectUrl, getLoginUrl, getVerifyEmailUrl } from '@/lib/auth-url';
+import { getAuthRedirectUrl, getLoginUrl, getSignupUrl, getVerifyEmailUrl } from '@/lib/auth-url';
 import { hasSupabaseConfig } from '@/lib/has-supabase';
 import { getBrowserSupabaseClient } from '@/lib/supabase';
 import { AuthSignupResult, LoginFormData, SignupFormData, User } from '@/types';
@@ -75,6 +75,10 @@ export function getVerifyEmailPath(
 
 export function getLoginPath(options?: { verified?: boolean; email?: string; returnTo?: string }): string {
   return getLoginUrl(options);
+}
+
+export function getSignupPath(returnTo?: string): string {
+  return getSignupUrl(returnTo);
 }
 
 export const authService = {

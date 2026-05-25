@@ -10,7 +10,7 @@ import { FormikZustandBridge } from '@/components/FormikZustandBridge';
 import { loginValidationSchema } from '@/schemas';
 import { AUTH_ERROR_CODES } from '@/lib/auth-codes';
 import { AuthApiError } from '@/lib/auth-api-error';
-import { authService, getVerifyEmailPath } from '@/services/auth';
+import { authService, getSignupPath, getVerifyEmailPath } from '@/services/auth';
 import { getSafeReturnToPath } from '@/lib/auth-url';
 import { useAuthStore } from '@/stores/auth-store';
 import { useFormStore } from '@/stores/form-store';
@@ -184,7 +184,7 @@ function LoginForm() {
                 </div>
               </div>
 
-              <Link href="/auth/signup">
+              <Link href={getSignupPath(returnTo === '/' ? undefined : returnTo)}>
                 <Button type="button" variant="outline" className="w-full">
                   Create New Account
                 </Button>

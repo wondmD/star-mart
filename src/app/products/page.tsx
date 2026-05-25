@@ -7,16 +7,7 @@ import { useCartStore } from '@/stores/cart-store';
 import { showCartToast } from '@/lib/cart-toast';
 import ProductsFilterPanel from '@/components/ProductsFilterPanel';
 import ProductList from '@/components/ProductList';
-
-const CATEGORIES = [
-  { value: '', label: 'All Categories' },
-  { value: 'Photography', label: 'Photography' },
-  { value: 'Audio', label: 'Audio' },
-  { value: 'Mobile', label: 'Mobile' },
-  { value: 'Networking', label: 'Networking' },
-  { value: 'Home Appliances', label: 'Home Appliances' },
-  { value: 'Fashion', label: 'Fashion' },
-];
+import { PRODUCT_CATEGORIES } from '@/constants/categories';
 
 function ProductsPageContent() {
   const searchParams = useSearchParams();
@@ -43,7 +34,7 @@ function ProductsPageContent() {
   return (
     <div className="grid gap-6 pt-0 pr-2 sm:pr-4 lg:pr-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <ProductsFilterPanel
-        categories={CATEGORIES}
+        categories={PRODUCT_CATEGORIES}
         minPrice={minPrice}
         maxPrice={maxPrice}
         onMinPriceChange={setMinPrice}

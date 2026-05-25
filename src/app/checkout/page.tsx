@@ -1,32 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Formik, Form } from 'formik';
-import { Button } from '@/components/Button';
-import { FormikInput, FormikTextArea, FormikSelect, Card } from '@/components/FormElements';
-import { FormikZustandBridge } from '@/components/FormikZustandBridge';
 import { useFormStore } from '@/stores/form-store';
-import { checkoutValidationSchema } from '@/schemas';
 import { useCartStore } from '@/stores/cart-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { paymentService } from '@/services/payment';
-import { getLoginPath } from '@/services/auth';
 import { totalWithTax } from '@/lib/checkout-totals';
-import toast from 'react-hot-toast';
-import { CreditCard, Package, MapPin } from 'lucide-react';
-import { OrderSummarySkeleton } from '@/components/Skeleton';
 import { FullPageSpinner } from '@/components/Spinner';
-
-const COUNTRIES = [
-  { value: 'Ethiopia', label: 'Ethiopia' },
-  { value: 'Kenya', label: 'Kenya' },
-  { value: 'Uganda', label: 'Uganda' },
-];
+import { CheckoutEmptyState } from '@/components/checkout/CheckoutEmptyState';
+import { CheckoutAuthGate } from '@/components/checkout/CheckoutAuthGate';
+import { DeliveryForm } from '@/components/checkout/DeliveryForm';
+import { CheckoutOrderSummary } from '@/components/checkout/CheckoutOrderSummary';
+import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { items, getTotal, clearCart } = useCartStore();
   const { user, loading: authLoading } = useAuthStore();
   const { mutateAsync: createOrder, isPending: isCreatingOrder } = useCreateOrder();
@@ -35,12 +23,7 @@ export default function CheckoutPage() {
   const submitError = getFieldError('submit');
 
   if (items.length === 0) {
-    return (
-      <div className="px-4 py-12 text-center sm:px-6 lg:px-8">
-        <p className="text-lg text-gray-600 mb-4">Your cart is empty</p>
-        <Button onClick={() => router.push('/products')}>Continue Shopping</Button>
-      </div>
-    );
+    return <CheckoutEmptyState />;
   }
 
   if (authLoading) {
@@ -48,12 +31,7 @@ export default function CheckoutPage() {
   }
 
   if (!user) {
-    return (
-      <div className="px-4 py-12 text-center sm:px-6 lg:px-8">
-        <p className="text-lg text-gray-600 mb-4">Please log in to checkout</p>
-        <Button onClick={() => router.push(getLoginPath({ returnTo: '/cart' }))}>Sign in</Button>
-      </div>
-    );
+    return <CheckoutAuthGate />;
   }
 
   const subtotal = getTotal();
@@ -101,170 +79,23 @@ export default function CheckoutPage() {
     <div className="space-y-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-4xl font-bold">Checkout</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Delivery Information */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card>
-            <div className="flex items-center gap-3 mb-6">
-              <MapPin className="w-6 h-6 text-blue-600" />
-              <h2 className="text-2xl font-bold">Delivery Information</h2>
-            </div>
-
-            <Formik
-              initialValues={{
-                full_name: user.full_name || '',
-                phone_number: '',
-                address: '',
-                city: '',
-                postal_code: '',
-                country: 'Ethiopia',
-                notes: '',
-              }}
-              validationSchema={checkoutValidationSchema}
-              validateOnChange
-              validateOnBlur
-              onSubmit={handleSubmit}
-            >
-              {({ isSubmitting }) => (
-                <Form className="space-y-6">
-                  <FormikZustandBridge />
-                  {submitError && (
-                    <p className="text-sm text-red-600 rounded-lg px-4 py-3 border border-red-200 bg-red-50">
-                      {submitError}
-                    </p>
-                  )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormikInput
-                      name="full_name"
-                      label="Full Name"
-                      placeholder="John Doe"
-                    />
-                    <FormikInput
-                      name="phone_number"
-                      label="Phone Number"
-                      placeholder="0900000000"
-                    />
-                  </div>
-
-                  <FormikInput
-                    name="address"
-                    label="Street Address"
-                    placeholder="123 Main Street"
-                  />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormikInput
-                      name="city"
-                      label="City"
-                      placeholder="Addis Ababa"
-                    />
-                    <FormikInput
-                      name="postal_code"
-                      label="Postal Code"
-                      placeholder="1000"
-                    />
-                  </div>
-
-                  <FormikSelect
-                    name="country"
-                    label="Country"
-                    options={COUNTRIES}
-                  />
-
-                  <FormikTextArea
-                    name="notes"
-                    label="Order Notes (Optional)"
-                    placeholder="Special instructions for delivery..."
-                    rows={4}
-                  />
-
-                  <div className="flex gap-4 pt-6 border-t">
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => router.back()}
-                      type="button"
-                    >
-                      Back to Cart
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="flex-1 flex items-center justify-center gap-2"
-                      loading={isSubmitting || isCreatingOrder || isProcessingPayment}
-                    >
-                      <CreditCard className="w-5 h-5" />
-                      Complete Order
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </Card>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-8 lg:col-span-2">
+          <DeliveryForm
+            user={user}
+            submitError={submitError}
+            isSubmitting={isCreatingOrder || isProcessingPayment}
+            onSubmit={handleSubmit}
+          />
         </div>
 
-        {/* Order Summary */}
-        <div>
-          {isCreatingOrder || isProcessingPayment ? (
-            <OrderSummarySkeleton />
-          ) : (
-            <Card className="sticky top-20 space-y-4">
-              <div className="flex items-center gap-2 pb-4 border-b">
-                <Package className="w-6 h-6 text-blue-600" />
-                <h3 className="text-xl font-bold">Order Summary</h3>
-              </div>
-
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {items.map((item) => (
-                  <div key={item.product_id} className="flex justify-between text-sm">
-                    <span className="text-gray-600">
-                      {item.product.name} x{item.quantity}
-                    </span>
-                    <span className="font-semibold">
-                      ETB {(item.product.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2 border-y py-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">ETB {subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="font-semibold">Free</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (15%)</span>
-                  <span className="font-semibold">
-                    ETB {taxAmount.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex justify-between text-xl font-bold text-blue-600">
-                <span>Total</span>
-                <span>ETB {orderTotal.toFixed(2)}</span>
-              </div>
-
-              {/* Security Info */}
-              <div className="bg-green-50 border border-green-200 rounded p-3 text-xs text-green-800">
-                <p className="font-semibold mb-1">✓ Secure Checkout</p>
-                <p className="text-xs">Your payment information is encrypted and secure</p>
-              </div>
-
-              {/* Payment Info */}
-              <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900">
-                <p className="font-semibold mb-1">StarPay Payment</p>
-                <p className="text-xs">
-                  You will be redirected to StarPay to pay securely. Test phone: 0900000000
-                </p>
-              </div>
-            </Card>
-          )}
-        </div>
+        <CheckoutOrderSummary
+          items={items}
+          subtotal={subtotal}
+          taxAmount={taxAmount}
+          orderTotal={orderTotal}
+          isLoading={isCreatingOrder || isProcessingPayment}
+        />
       </div>
     </div>
   );
