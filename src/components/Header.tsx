@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
     <header
       ref={headerRef}
       className="sticky top-0 z-50 border-b backdrop-blur-xl"
-      style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
+      style={{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--border-color)' }}
     >
       <nav className="flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <HeaderLogo />

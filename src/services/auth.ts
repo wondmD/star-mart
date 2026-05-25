@@ -6,6 +6,7 @@ import { getBrowserSupabaseClient } from '@/lib/supabase';
 import { AuthSignupResult, LoginFormData, SignupFormData, User } from '@/types';
 
 const AUTH_TOKEN_KEY = 'auth_token';
+let inflightCurrentUserRequest: Promise<User | null> | null = null;
 
 function saveAuthToken(token: string): void {
   if (typeof window !== 'undefined') {
@@ -225,13 +226,23 @@ export const authService = {
       return null;
     }
 
-    try {
-      const { data: user } = await authRequest<User>('me');
-      return user;
-    } catch {
-      clearAuthToken();
-      return null;
+    if (inflightCurrentUserRequest) {
+      return inflightCurrentUserRequest;
     }
+
+    inflightCurrentUserRequest = (async () => {
+      try {
+        const { data: user } = await authRequest<User>('me');
+        return user;
+      } catch {
+        clearAuthToken();
+        return null;
+      } finally {
+        inflightCurrentUserRequest = null;
+      }
+    })();
+
+    return inflightCurrentUserRequest;
   },
 
   async updateProfile(updates: Partial<User>): Promise<User> {

@@ -82,9 +82,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         style={{
-          backgroundColor: 'var(--bg-primary)',
-          border: `1px solid ${error ? 'var(--error)' : 'var(--border-color)'}`,
-          color: 'var(--text-primary)',
+          backgroundColor: 'var(--input-bg)',
+          border: `1px solid ${error ? 'var(--error)' : 'var(--input-border)'}`,
+          color: 'var(--input-text)',
           boxShadow: 'none',
         }}
         {...props}
@@ -116,9 +116,9 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           className
         )}
         style={{
-          backgroundColor: 'var(--bg-primary)',
-          border: `1px solid ${error ? 'var(--error)' : 'var(--border-color)'}`,
-          color: 'var(--text-primary)',
+          backgroundColor: 'var(--input-bg)',
+          border: `1px solid ${error ? 'var(--error)' : 'var(--input-border)'}`,
+          color: 'var(--input-text)',
           boxShadow: 'none',
         }}
         {...props}
@@ -151,9 +151,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           className
         )}
         style={{
-          backgroundColor: 'var(--bg-primary)',
-          border: `1px solid ${error ? 'var(--error)' : 'var(--border-color)'}`,
-          color: 'var(--text-primary)',
+          backgroundColor: 'var(--input-bg)',
+          border: `1px solid ${error ? 'var(--error)' : 'var(--input-border)'}`,
+          color: 'var(--input-text)',
           boxShadow: 'none',
         }}
         {...props}

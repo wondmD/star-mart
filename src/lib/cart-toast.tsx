@@ -50,8 +50,11 @@ export function showCartToast({ productName, quantity = 1 }: CartToastOptions = 
         <Link
           href="/cart"
           onClick={() => toast.dismiss(t.id)}
-          className="shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-          style={{ backgroundColor: 'var(--accent-primary)' }}
+          className="shrink-0 rounded-full px-3 py-2 text-sm font-semibold transition hover:opacity-90"
+          style={{
+            backgroundColor: 'var(--accent-primary)',
+            color: 'var(--text-on-amber)',
+          }}
         >
           View cart
         </Link>

@@ -1,94 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 import { requireAdminAccess } from '@/lib/admin-access';
-import {
-  mutateProductWithFallback,
-} from '@/lib/admin-product-utils';
-import { hasSupabaseConfig } from '@/lib/has-supabase';
-import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase-config';
+import { deleteProduct, getProductById, updateProduct } from '@/lib/products-repository';
 import { ApiResponse, Product } from '@/types';
-
-function asNumber(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  return undefined;
-}
-
-function buildPartialProductPayload(body: Partial<Product>): Record<string, unknown> {
-  const payload: Record<string, unknown> = {};
-
-  if (body.name !== undefined) payload.name = body.name.trim();
-  if (body.description !== undefined) payload.description = body.description.trim();
-  if (body.price !== undefined) payload.price = body.price;
-  if (body.discount_price !== undefined) payload.discount_price = body.discount_price;
-  if (body.image_url !== undefined) payload.image_url = body.image_url.trim();
-  if (body.category !== undefined) payload.category = body.category.trim();
-  if (body.stock !== undefined) payload.stock = body.stock;
-
-  return payload;
-}
-
-function normalizeProductRow(row: Record<string, unknown>): Product {
-  return {
-    id: String(row.id ?? ''),
-    name: String(row.name ?? 'Unnamed Product'),
-    description: String(row.description ?? ''),
-    price: asNumber(row.price) ?? 0,
-    discount_price: asNumber(row.discount_price),
-    image_url: String(row.image_url ?? '/placeholder.png'),
-    category: String(row.category ?? 'General'),
-    stock: asNumber(row.stock) ?? 0,
-    created_at: String(row.created_at ?? new Date().toISOString()),
-  };
-}
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
+    const product = await getProductById(id);
 
-    if (!hasSupabaseConfig()) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
-      };
-      return NextResponse.json(response, { status: 503 });
-    }
-
-    const supabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (!error && data) {
-      const response: ApiResponse<Product> = {
-        success: true,
-        data: normalizeProductRow(data as Record<string, unknown>),
-      };
-
-      return NextResponse.json(response);
-    }
-
-    if (error || !data) {
+    if (!product) {
       const response: ApiResponse<null> = {
         success: false,
         error: 'Product not found',
       };
       return NextResponse.json(response, { status: 404 });
     }
+
+    const response: ApiResponse<Product> = {
+      success: true,
+      data: product,
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching product:', error);
     const response: ApiResponse<null> = {
@@ -111,9 +48,17 @@ export async function PATCH(
 
     const { id } = await params;
     const body = (await request.json()) as Partial<Product>;
-    const payload = buildPartialProductPayload(body);
+    const updates = {
+      ...(body.name !== undefined ? { name: body.name.trim() } : {}),
+      ...(body.description !== undefined ? { description: body.description.trim() } : {}),
+      ...(body.price !== undefined ? { price: body.price } : {}),
+      ...(body.discount_price !== undefined ? { discount_price: body.discount_price } : {}),
+      ...(body.image_url !== undefined ? { image_url: body.image_url.trim() } : {}),
+      ...(body.category !== undefined ? { category: body.category.trim() } : {}),
+      ...(body.stock !== undefined ? { stock: body.stock } : {}),
+    };
 
-    if (Object.keys(payload).length === 0) {
+    if (Object.keys(updates).length === 0) {
       const response: ApiResponse<null> = {
         success: false,
         error: 'No product fields provided to update',
@@ -121,16 +66,7 @@ export async function PATCH(
       return NextResponse.json(response, { status: 400 });
     }
 
-    const updated = await mutateProductWithFallback(
-      async (currentPayload) =>
-        access.adminClient
-          .from('products')
-          .update(currentPayload)
-          .eq('id', id)
-          .select()
-          .single(),
-      payload,
-    );
+    const updated = await updateProduct(id, updates);
 
     if (!updated) {
       const response: ApiResponse<null> = {
@@ -142,7 +78,7 @@ export async function PATCH(
 
     const response: ApiResponse<Product> = {
       success: true,
-      data: normalizeProductRow(updated as Record<string, unknown>),
+      data: updated,
       message: 'Product updated successfully',
     };
 
@@ -168,10 +104,14 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const { error } = await access.adminClient.from('products').delete().eq('id', id);
+    const deleted = await deleteProduct(id);
 
-    if (error) {
-      throw error;
+    if (!deleted) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Product not found',
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const response: ApiResponse<null> = {

@@ -19,7 +19,9 @@ export function AuthPageLayout({ title, subtitle, children }: AuthPageLayoutProp
               className="flex h-12 w-12 items-center justify-center rounded-lg"
               style={{ backgroundColor: 'var(--accent-primary)' }}
             >
-              <span className="text-xl font-bold text-white">S</span>
+              <span className="text-xl font-bold" style={{ color: 'var(--text-on-amber)' }}>
+                S
+              </span>
             </div>
           </div>
           <h2 className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>

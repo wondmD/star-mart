@@ -28,15 +28,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
-    const baseStyles = 'font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md';
+    const baseStyles =
+      'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm';
 
     const variants = {
-      primary: 'text-white focus:ring-offset-2',
-      secondary: 'text-gray-900 focus:ring-offset-2',
-      danger: 'text-white focus:ring-offset-2',
-      outline: 'border-2 focus:ring-offset-2',
+      primary: 'focus:ring-[var(--brand-amber)]',
+      secondary: 'focus:ring-[var(--brand-cobalt)]',
+      danger: 'focus:ring-[var(--error)]',
+      outline: 'border-2 bg-transparent focus:ring-[var(--brand-cobalt)]',
     };
 
     const sizes = {
@@ -45,79 +46,70 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'px-6 py-3 text-lg',
     };
 
-    const getStyles = () => {
-      const primaryStyle = {
-        backgroundColor: 'var(--accent-primary)',
-        boxShadow: '0 14px 30px rgba(0, 173, 181, 0.24)',
-      };
-      const primaryHover = {
-        backgroundColor: 'var(--accent-secondary)',
-        color: 'var(--bg-primary)',
-        boxShadow: '0 18px 35px rgba(34, 40, 49, 0.28)',
-      };
-      const secondaryStyle = {
-        backgroundColor: 'var(--bg-secondary)',
-        color: 'var(--text-primary)',
-        border: '1px solid var(--border-color)',
-      };
-      const dangerStyle = {
-        backgroundColor: 'var(--error)',
-        color: 'var(--bg-primary)',
-      };
-      const outlineStyle = {
-        borderColor: 'var(--accent-primary)',
-        color: 'var(--accent-primary)',
-        backgroundColor: 'transparent',
-      };
-
-      return { primaryStyle, primaryHover, secondaryStyle, dangerStyle, outlineStyle };
-    };
-
-    const { primaryStyle, primaryHover, secondaryStyle, dangerStyle, outlineStyle } = getStyles();
-
-    const getButtonStyle = () => {
+    const getButtonStyle = (): React.CSSProperties => {
       switch (variant) {
         case 'primary':
-          return primaryStyle;
+          return {
+            backgroundColor: 'var(--button-primary-bg)',
+            color: 'var(--button-primary-text)',
+            boxShadow: 'var(--shadow-amber)',
+          };
         case 'secondary':
-          return secondaryStyle;
+          return {
+            backgroundColor: 'var(--button-secondary-bg)',
+            color: 'var(--button-secondary-text)',
+            border: '1px solid var(--button-secondary-border)',
+            boxShadow: 'var(--shadow-xs)',
+          };
         case 'danger':
-          return dangerStyle;
+          return {
+            backgroundColor: 'var(--button-danger-bg)',
+            color: 'var(--button-danger-text)',
+            boxShadow: 'var(--shadow-sm)',
+          };
         case 'outline':
-          return outlineStyle;
+          return {
+            borderColor: 'var(--button-outline-border)',
+            color: 'var(--button-outline-text)',
+          };
         default:
-          return primaryStyle;
+          return {};
       }
+    };
+
+    const handleMouseEnter = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (disabled || loading || variant !== 'primary') {
+        return;
+      }
+
+      const button = event.currentTarget;
+      button.style.backgroundColor = 'var(--button-primary-hover-bg)';
+      button.style.color = 'var(--button-primary-hover-text)';
+      button.style.boxShadow = 'var(--shadow-cobalt)';
+      button.style.transform = 'translateY(-2px)';
+    };
+
+    const handleMouseLeave = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (variant !== 'primary') {
+        return;
+      }
+
+      const button = event.currentTarget;
+      const styles = getButtonStyle();
+      button.style.backgroundColor = String(styles.backgroundColor ?? '');
+      button.style.color = String(styles.color ?? '');
+      button.style.boxShadow = String(styles.boxShadow ?? '');
+      button.style.transform = 'translateY(0)';
     };
 
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={clsx(
-          baseStyles,
-          variants[variant],
-          sizes[size],
-          (disabled || loading) && 'opacity-50 cursor-not-allowed',
-          className
-        )}
+        className={clsx(baseStyles, variants[variant], sizes[size], className)}
         style={getButtonStyle()}
-        onMouseEnter={(e) => {
-          if (variant === 'primary' && !disabled && !loading) {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-secondary)';
-            (e.currentTarget as HTMLButtonElement).style.color = 'var(--bg-primary)';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 18px 35px rgba(34, 40, 49, 0.28)';
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (variant === 'primary') {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-primary)';
-            (e.currentTarget as HTMLButtonElement).style.color = 'white';
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 30px rgba(0, 173, 181, 0.24)';
-            (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-          }
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         {...props}
       >
         {loading ? (
@@ -130,7 +122,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = 'Button';

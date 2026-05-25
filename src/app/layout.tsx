@@ -18,14 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased"
-      suppressHydrationWarning
-      data-scroll-behavior="smooth"
-      data-theme="light"
-      style={{ colorScheme: 'light' }}
-    >
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         <CustomThemeProvider>
           <QueryProvider>

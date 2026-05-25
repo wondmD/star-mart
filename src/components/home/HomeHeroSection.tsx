@@ -23,18 +23,29 @@ export function HomeHeroSection({
       className="relative w-full overflow-hidden border-y shadow-xl"
       style={{ borderColor: 'var(--border-color)' }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(252,191,73,0.24),transparent_34%),radial-gradient(circle_at_top_right,rgba(214,40,40,0.16),transparent_30%),linear-gradient(135deg,#081f2d_0%,#0f3550_46%,#174d60_100%)]" />
-      <div className="absolute -left-24 top-10 h-64 w-64 rounded-full bg-[#fcbf49]/12 blur-3xl" />
-      <div className="absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-[#d62828]/12 blur-3xl" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at top left, var(--hero-glow-amber), transparent 34%), radial-gradient(circle at top right, var(--hero-glow-cobalt), transparent 30%), var(--hero-gradient)`,
+        }}
+      />
+      <div
+        className="absolute -left-24 top-10 h-64 w-64 rounded-full blur-3xl"
+        style={{ backgroundColor: 'var(--hero-glow-amber)' }}
+      />
+      <div
+        className="absolute -bottom-20 right-0 h-72 w-72 rounded-full blur-3xl"
+        style={{ backgroundColor: 'var(--hero-glow-cobalt)' }}
+      />
 
       <div className="relative mx-auto grid min-h-[38vh] max-w-none gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.58fr)] lg:items-center lg:px-10 xl:px-14">
-        <div className="max-w-3xl text-white">
+        <div className="max-w-3xl" style={{ color: 'var(--hero-text)' }}>
           <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
             Discover products that feel premium from the first glance.
           </h1>
           <p
             className="mt-4 max-w-2xl text-sm sm:text-base lg:text-lg"
-            style={{ color: 'rgba(252,251,247,0.82)' }}
+            style={{ color: 'var(--hero-text-muted)' }}
           >
             Explore curated picks, quick category shortcuts, and a clean checkout flow
             built for a smooth shopping experience.
@@ -47,22 +58,18 @@ export function HomeHeroSection({
               backgroundColor: 'rgba(252,251,247,0.1)',
             }}
           >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/70">
+            <p
+              className="mb-3 text-xs font-semibold uppercase tracking-[0.24em]"
+              style={{ color: 'var(--hero-text-muted)' }}
+            >
               Browse products
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <p className="flex-1 text-sm leading-6 text-white/75">
+              <p className="flex-1 text-sm leading-6" style={{ color: 'var(--hero-text-muted)' }}>
                 Jump straight into the catalog to search, filter, and compare products.
               </p>
               <Link href="/products" className="sm:min-w-40">
-                <Button
-                  size="lg"
-                  className="w-full"
-                  style={{
-                    backgroundColor: 'var(--accent-primary)',
-                    color: 'var(--bg-secondary)',
-                  }}
-                >
+                <Button size="lg" className="w-full">
                   Browse products
                 </Button>
               </Link>
@@ -77,8 +84,9 @@ export function HomeHeroSection({
                 onClick={() => onCategorySelect(category.value)}
                 className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:scale-[1.01]"
                 style={{
-                  borderColor: 'rgba(252,251,247,0.2)',
-                  backgroundColor: 'rgba(252,251,247,0.08)',
+                  borderColor: 'var(--hero-border)',
+                  backgroundColor: 'var(--hero-surface)',
+                  color: 'var(--hero-text)',
                 }}
               >
                 <Tag className="h-4 w-4" />

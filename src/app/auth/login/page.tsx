@@ -64,7 +64,9 @@ function LoginForm() {
               className="w-12 h-12 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: 'var(--accent-primary)' }}
             >
-              <span className="text-white font-bold text-xl">S</span>
+              <span className="font-bold text-xl" style={{ color: 'var(--text-on-amber)' }}>
+                S
+              </span>
             </div>
           </div>
           <h2 className="text-4xl font-bold" style={{ color: 'var(--text-primary)' }}>

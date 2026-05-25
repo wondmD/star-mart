@@ -32,8 +32,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 
         {discountPercentage > 0 && (
           <div
-            className="absolute top-2 right-2 text-white px-3 py-1 rounded-lg text-sm font-bold"
-            style={{ backgroundColor: 'var(--error)' }}
+            className="absolute top-2 right-2 px-3 py-1 rounded-lg text-sm font-bold"
+            style={{
+              backgroundColor: 'var(--badge-sale-bg)',
+              color: 'var(--badge-sale-text)',
+            }}
           >
             -{discountPercentage}%
           </div>

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
 import { requireAdminAccess } from '@/lib/admin-access';
-import { buildProductPayload, mutateProductWithFallback } from '@/lib/admin-product-utils';
-import { hasSupabaseConfig } from '@/lib/has-supabase';
-import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/supabase-config';
+import { createProduct, listProducts } from '@/lib/products-repository';
 import { ApiResponse, Product } from '@/types';
 
 function asNumber(value: unknown): number | undefined {
@@ -20,94 +17,19 @@ function asNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-function normalizeProductRow(row: Record<string, unknown>): Product {
-  const price = asNumber(row.price) ?? 0;
-  const stock = asNumber(row.stock) ?? 0;
-  const discountPrice = asNumber(row.discount_price);
-
-  return {
-    id: String(row.id ?? ''),
-    name: String(row.name ?? 'Unnamed Product'),
-    description: String(row.description ?? ''),
-    price,
-    discount_price: discountPrice,
-    image_url: String(row.image_url ?? '/placeholder.png'),
-    category: String(row.category ?? 'General'),
-    stock,
-    created_at: String(row.created_at ?? new Date().toISOString()),
-  };
-}
-
-function filterProducts(
-  products: Product[],
-  category: string | null,
-  minPrice: string | null,
-  maxPrice: string | null,
-  search: string | null,
-): Product[] {
-  const normalizedCategory = category?.trim().toLowerCase() ?? null;
-  const min = minPrice ? Number(minPrice) : undefined;
-  const max = maxPrice ? Number(maxPrice) : undefined;
-  const searchTerm = search?.trim().toLowerCase() ?? null;
-
-  return products.filter((product) => {
-    if (normalizedCategory && product.category.toLowerCase() !== normalizedCategory) {
-      return false;
-    }
-
-    if (min !== undefined && product.price < min) {
-      return false;
-    }
-
-    if (max !== undefined && product.price > max) {
-      return false;
-    }
-
-    if (searchTerm) {
-      return (
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    return true;
-  });
-}
-
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get('category');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const search = searchParams.get('search');
-
-    if (!hasSupabaseConfig()) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.',
-      };
-      return NextResponse.json(response, { status: 503 });
-    }
-
-    const supabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw error;
-    }
-
-    const normalizedProducts = ((data ?? []) as Record<string, unknown>[]).map(
-      normalizeProductRow,
-    );
+    const products = await listProducts({
+      category: searchParams.get('category'),
+      minPrice: searchParams.get('minPrice'),
+      maxPrice: searchParams.get('maxPrice'),
+      search: searchParams.get('search'),
+    });
 
     const response: ApiResponse<Product[]> = {
       success: true,
-      data: filterProducts(normalizedProducts, category, minPrice, maxPrice, search),
+      data: products,
     };
 
     return NextResponse.json(response);
@@ -144,7 +66,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    const payload = buildProductPayload({
+    const product = await createProduct({
       name,
       description,
       price,
@@ -154,22 +76,9 @@ export async function POST(request: NextRequest) {
       stock,
     });
 
-    const inserted = await mutateProductWithFallback(
-      async (currentPayload) => access.adminClient.from('products').insert([currentPayload]).select().single(),
-      payload,
-    );
-
-    if (!inserted) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Product could not be created',
-      };
-      return NextResponse.json(response, { status: 500 });
-    }
-
     const response: ApiResponse<Product> = {
       success: true,
-      data: normalizeProductRow(inserted as Record<string, unknown>),
+      data: product,
       message: 'Product created successfully',
     };
 

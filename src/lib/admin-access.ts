@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { useSupabaseAuth } from '@/lib/auth-mode';
+import { getLocalUserByToken } from '@/lib/local-auth-store';
 import { createSupabaseAdminClient } from '@/lib/supabase-admin';
 import {
   createRouteHandlerSupabaseClient,
@@ -13,8 +14,8 @@ import { ApiResponse, User } from '@/types';
 export type AdminAccessResult =
   | {
       ok: true;
-      adminClient: SupabaseClient;
       user: User;
+      adminClient?: SupabaseClient;
     }
   | {
       ok: false;
@@ -30,14 +31,30 @@ function errorResponse(message: string, status: number): NextResponse {
   return NextResponse.json(response, { status });
 }
 
-export async function requireAdminAccess(request: NextRequest): Promise<AdminAccessResult> {
-  if (!useSupabaseAuth()) {
+async function requireLocalAdminAccess(token: string): Promise<AdminAccessResult> {
+  const user = await getLocalUserByToken(token);
+
+  if (!user) {
     return {
       ok: false,
-      response: errorResponse('Admin access requires Supabase authentication', 503),
+      response: errorResponse('Session expired or invalid', 401),
     };
   }
 
+  if (!user.is_admin) {
+    return {
+      ok: false,
+      response: errorResponse('Admin access required', 403),
+    };
+  }
+
+  return {
+    ok: true,
+    user,
+  };
+}
+
+export async function requireAdminAccess(request: NextRequest): Promise<AdminAccessResult> {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return {
@@ -47,6 +64,11 @@ export async function requireAdminAccess(request: NextRequest): Promise<AdminAcc
   }
 
   const token = authHeader.slice(7);
+
+  if (!useSupabaseAuth()) {
+    return requireLocalAdminAccess(token);
+  }
+
   const authUser = await getSupabaseUserFromToken(token);
   if (!authUser) {
     return {
@@ -66,16 +88,10 @@ export async function requireAdminAccess(request: NextRequest): Promise<AdminAcc
   }
 
   const adminClient = createSupabaseAdminClient();
-  if (!adminClient) {
-    return {
-      ok: false,
-      response: errorResponse('Missing SUPABASE_SERVICE_ROLE_KEY for admin operations', 503),
-    };
-  }
 
   return {
     ok: true,
-    adminClient,
     user: profile,
+    adminClient: adminClient ?? undefined,
   };
 }

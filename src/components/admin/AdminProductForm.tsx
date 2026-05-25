@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { Save, X } from 'lucide-react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/FormElements';
+import { PRODUCT_CATEGORIES } from '@/constants/categories';
 
 export type AdminProductFormState = {
   name: string;
@@ -58,7 +60,22 @@ export function AdminProductForm({
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="grid gap-4 sm:grid-cols-2">
           <AdminField label="Name" value={form.name} onChange={(value) => onChange({ name: value })} placeholder="Product name" />
-          <AdminField label="Category" value={form.category} onChange={(value) => onChange({ category: value })} placeholder="Electronics" />
+          <label className="space-y-2 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Category
+            <select
+              value={form.category}
+              onChange={(event) => onChange({ category: event.target.value })}
+              className="w-full rounded-2xl border px-4 py-3 outline-none"
+              style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
+            >
+              <option value="">Select category</option>
+              {PRODUCT_CATEGORIES.filter((entry) => entry.value).map((entry) => (
+                <option key={entry.value} value={entry.value}>
+                  {entry.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <label className="space-y-2 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -79,6 +96,21 @@ export function AdminProductForm({
         </div>
 
         <AdminField label="Image URL" value={form.image_url} onChange={(value) => onChange({ image_url: value })} placeholder="/camera.jpg" />
+
+        {form.image_url.trim() ? (
+          <div
+            className="relative h-40 w-full overflow-hidden rounded-2xl border"
+            style={{ borderColor: 'var(--border-color)' }}
+          >
+            <Image
+              src={form.image_url.trim()}
+              alt="Product preview"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap gap-3 pt-2">
           <Button type="submit" loading={isSaving}>
